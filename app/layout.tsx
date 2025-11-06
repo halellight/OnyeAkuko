@@ -9,7 +9,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 
 export const metadata: Metadata = {
-  title: "OnyeAkuko - AI-Powered News Curator",
+  title: "OnyeAkuko - Your AI-Powered News Curator",
   description: "Stay informed with curated news from credible sources across all major categories",
   keywords: [
     "Nigerian leaders",

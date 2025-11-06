@@ -51,7 +51,7 @@ export function NewsArticle({
   }
 
   return (
-    <article className="bg-card border-2 border-border rounded-lg overflow-hidden hover:border-[#ff9a88] transition-shadow h-full flex flex-col group">
+    <article className="bg-card border-2 border-border rounded-lg overflow-hidden hover:border-[#F54900] transition-shadow h-full flex flex-col group">
       <div className="w-full h-48 bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
         {imageUrl && imageUrl !== "N/A" ? (
           <img src={imageUrl || "/placeholder.svg"} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>

@@ -46,11 +46,11 @@ export default function Dashboard() {
         if (Array.isArray(data)) {
           setArticles(data)
         } else {
-          console.error("[v0] API returned non-array:", data)
+          console.error("API returned non-array:", data)
           setArticles([])
         }
       } catch (error) {
-        console.error("[v0] Failed to load articles:", error)
+        console.error("Failed to load articles:", error)
         setArticles([]) // Set empty array on error instead of leaving undefined
       } finally {
         setLoading(false)

@@ -1,41 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-const NEWSAPI_KEY = process.env.NEWSAPI_KEY
-const NEWSAPI_URL = "https://newsapi.org/v2"
+const MEDIASTACK_API_KEY = process.env.MEDIASTACK_API_KEY
+const MEDIASTACK_URL = "https://api.mediastack.com/v1/news" // ✅ HTTPS
 
+// 🧠 Sentiment Detection
 function detectSentiment(title: string, description: string): "positive" | "negative" | "neutral" {
   const text = (title + " " + description).toLowerCase()
 
   const positiveWords = [
-    "growth",
-    "success",
-    "achieve",
-    "improve",
-    "advance",
-    "boost",
-    "surge",
-    "record",
-    "gain",
-    "profit",
-    "launch",
-    "innovation",
-    "investment",
-    "partnership",
+    "growth", "success", "achieve", "improve", "advance", "boost", "surge",
+    "record", "gain", "profit", "launch", "innovation", "investment", "partnership",
   ]
   const negativeWords = [
-    "decline",
-    "loss",
-    "crisis",
-    "drop",
-    "fail",
-    "worse",
-    "concern",
-    "risk",
-    "threat",
-    "attack",
-    "bankruptcy",
-    "layoff",
-    "controversy",
+    "decline", "loss", "crisis", "drop", "fail", "worse", "concern", "risk",
+    "threat", "attack", "bankruptcy", "layoff", "controversy",
   ]
 
   const positiveCount = positiveWords.filter((word) => text.includes(word)).length
@@ -46,88 +24,55 @@ function detectSentiment(title: string, description: string): "positive" | "nega
   return "neutral"
 }
 
+// 🏷️ Category Detection
 function detectCategory(title: string, description: string): string {
   const text = (title + " " + description).toLowerCase()
-
-  if (
-    text.includes("tech") ||
-    text.includes("software") ||
-    text.includes("ai") ||
-    text.includes("startup") ||
-    text.includes("digital") ||
-    text.includes("app") ||
-    text.includes("crypto") ||
-    text.includes("fintech")
-  )
-    return "technology"
-  if (text.includes("business") || text.includes("market") || text.includes("trade") || text.includes("economy"))
-    return "business"
-  if (text.includes("government") || text.includes("politics") || text.includes("election")) return "politics"
-  if (text.includes("culture") || text.includes("film") || text.includes("music") || text.includes("entertainment"))
-    return "culture"
-  if (text.includes("science") || text.includes("research") || text.includes("energy") || text.includes("health"))
-    return "science"
-
+  if (text.match(/tech|software|ai|startup|digital|app|crypto|fintech/)) return "technology"
+  if (text.match(/business|market|trade|economy|finance/)) return "business"
+  if (text.match(/government|politics|election|policy/)) return "politics"
+  if (text.match(/culture|film|music|entertainment|fashion/)) return "culture"
+  if (text.match(/science|research|energy|health/)) return "science"
   return "world"
 }
 
+// 🌍 Region Detection
+function detectRegion(title: string, description: string): "global" | "africa" | "nigeria" {
+  const text = (title + " " + description).toLowerCase()
+  if (text.includes("nigeria") || text.includes("lagos") || text.includes("abuja")) return "nigeria"
+  if (text.match(/africa|kenya|ghana|south africa|uganda/)) return "africa"
+  return "global"
+}
+
+// ✅ Validate article quality
 function isQualityArticle(article: any): boolean {
   if (!article.title || !article.description) return false
+  if (article.description.length < 20) return false
 
-  const text = (article.title + " " + article.description).toLowerCase()
-  const source = (article.source?.name || article.source || "").toLowerCase()
-
-  const blockedSources = [
-    "clarkes world",
-    "clarke's world",
-    "science fiction",
-    "fantasy magazine",
-    "medium",
-    "reddit",
-    "quora",
-    "gossip",
-  ]
-
+  const source = (article.source || "").toLowerCase()
+  const blockedSources = ["reddit", "quora", "gossip", "medium", "tabloid"]
   if (blockedSources.some((blocked) => source.includes(blocked))) return false
-
-  const skipPatterns = [
-    /india\s+(news|tech|business)/i,
-    /mumbai|delhi|bangalore|hyderabad|pune/i,
-    /indian\s+(startup|company|tech)/i,
-    /watch this/i,
-    /you wont believe/i,
-    /shocking/i,
-    /recipe/i,
-    /makeup/i,
-    /celebrity gossip/i,
-    /horoscope/i,
-    /lottery/i,
-    /astrology/i,
-  ]
-
-  if (skipPatterns.some((pattern) => pattern.test(text))) return false
-
-  if (!article.description || article.description.length < 20) return false
 
   return true
 }
 
-function detectRegion(title: string, description: string): "global" | "africa" | "nigeria" {
-  const text = (title + " " + description).toLowerCase()
+// 🖼️ Fix and Validate Image URLs
+function getImageUrl(article: any): string {
+  if (article.image && typeof article.image === "string") {
+    let img = article.image.trim()
 
-  if (text.includes("nigeria") || text.includes("lagos") || text.includes("abuja")) return "nigeria"
-  if (
-    text.includes("africa") ||
-    text.includes("kenya") ||
-    text.includes("ghana") ||
-    text.includes("south africa") ||
-    text.includes("uganda")
-  )
-    return "africa"
+    // Convert insecure URLs
+    if (img.startsWith("http://")) img = img.replace("http://", "https://")
 
-  return "global"
+    // Filter out invalid cases
+    if (img.startsWith("https://") && !img.includes("undefined") && !img.endsWith("/")) {
+      return img
+    }
+  }
+  // ✅ Fallback image in /public
+  return "/nigerian-tech-startup.jpg"
 }
 
+// 💾 Fallback Articles (when API fails)
 const fallbackArticles = [
   {
     id: "fallback-1",
@@ -173,82 +118,76 @@ const fallbackArticles = [
   },
 ]
 
+// 📡 Main API Route
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { category, region, sentiment } = body
+    const { category = "general", region = "ng", sentiment = "all" } = body
 
     const allArticles: any[] = []
 
-    if (NEWSAPI_KEY) {
-      const nigerianQueries = [
-        "Nigeria tech startup",
-        "Lagos innovation hub",
-        "Nigerian fintech",
-        "Africa software development",
-        "Nigeria AI artificial intelligence",
-      ]
+    if (MEDIASTACK_API_KEY) {
+      try {
+        const url = `${MEDIASTACK_URL}?access_key=${MEDIASTACK_API_KEY}&countries=${region}&categories=${category}&languages=en&limit=50&sort=published_desc`
 
-      for (const query of nigerianQueries) {
-        try {
-          const params = new URLSearchParams({
-            q: query,
-            language: "en",
-            sortBy: "publishedAt",
-            pageSize: "30",
-            apiKey: NEWSAPI_KEY,
-          })
-
-          const response = await fetch(`${NEWSAPI_URL}/everything?${params.toString()}`)
-
-          if (response.ok) {
-            const data = await response.json()
-            if (data.articles && Array.isArray(data.articles)) {
-              allArticles.push(...data.articles)
-            }
-          } else {
-            console.log("[v0] NewsAPI returned status:", response.status)
+        const response = await fetch(url)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.data && Array.isArray(data.data)) {
+            allArticles.push(...data.data)
           }
-        } catch (e) {
-          console.log("[v0] NewsAPI query failed for:", query, e instanceof Error ? e.message : String(e))
+        } else {
+          console.log("[v1] Mediastack returned status:", response.status)
         }
+      } catch (e) {
+        console.log("[v1] Mediastack query failed:", e instanceof Error ? e.message : String(e))
       }
     } else {
-      console.log("[v0] NEWSAPI_KEY not set, using fallback articles")
+      console.log("[v1] MEDIASTACK_API_KEY not set, using fallback articles")
     }
 
+    // If Mediastack fails, use fallback data
     if (allArticles.length === 0) {
-      console.log("[v0] No articles from NewsAPI, using fallback data")
+      console.log("[v1] No articles from Mediastack, using fallback data")
       allArticles.push(...fallbackArticles)
     }
 
+    // 🧠 Transform + Clean Articles
     const articles = allArticles
       .filter(isQualityArticle)
       .map((article: any, index: number) => ({
         id: article.id || `${index}-${Date.now()}`,
         title: article.title,
-        description: article.description || article.content || "",
-        source: article.source?.name || "News",
-        category: detectCategory(article.title, article.description || ""),
-        sentiment: detectSentiment(article.title, article.description || ""),
-        region: detectRegion(article.title, article.description || ""),
-        date: article.publishedAt || article.date || new Date().toISOString(),
-        imageUrl: article.urlToImage || article.imageUrl || "/placeholder.svg?height=200&width=400",
-        link: article.url || article.link,
-        credibility: 0.85,
+        description: article.description || "",
+        source: article.source || "Unknown",
+        category: detectCategory(article.title, article.description),
+        sentiment: detectSentiment(article.title, article.description),
+        region: detectRegion(article.title, article.description),
+        date: article.published_at || new Date().toISOString(),
+        imageUrl: getImageUrl(article),
+        link: article.url,
+        credibility:
+          article.source?.toLowerCase().includes("bbc") ||
+          article.source?.toLowerCase().includes("reuters")
+            ? 0.95
+            : 0.85,
       }))
+      // remove duplicates by title
       .filter((article, index, self) => self.findIndex((a) => a.title === article.title) === index)
       .slice(0, 60)
 
+    // Filter by sentiment if specified
     let filtered = articles
-    if (sentiment && sentiment !== "all") {
-      filtered = filtered.filter((article) => article.sentiment === sentiment)
-    }
+    if (sentiment !== "all") filtered = filtered.filter((a) => a.sentiment === sentiment)
 
-    console.log("[v0] Returning", filtered.length, "articles")
-    return NextResponse.json(filtered)
+    console.log("[v1] Returning", filtered.length, "articles")
+
+    // ✅ Cache control for faster loads
+    return NextResponse.json(filtered, {
+      headers: { "Cache-Control": "s-maxage=600, stale-while-revalidate" },
+    })
   } catch (error) {
-    console.error("[v0] News API error:", error)
+    console.error("[v1] Mediastack API error:", error)
     return NextResponse.json(fallbackArticles)
   }
 }

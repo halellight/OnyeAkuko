@@ -12,7 +12,7 @@ export function NewsHeader() {
             <h1 className="text-6xl font-bold font-stretch-ultra-condensed font-satoshi text-foreground">
               OnyeAkụkọ
             </h1>
-            <p className="text-m text-muted-foreground">AI-Powered News Curator</p>
+            <p className="text-m text-muted-foreground">Your AI-Powered News Curator</p>
           </div>
 
           {/* Notification bell on the right */}
