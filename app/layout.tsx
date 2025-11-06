@@ -7,10 +7,46 @@ import "./globals.css"
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
+
 export const metadata: Metadata = {
   title: "OnyeAkuko - AI-Powered News Curator",
   description: "Stay informed with curated news from credible sources across all major categories",
-  // generator: "v0.app",
+  keywords: [
+    "Nigerian leaders",
+    "public officials",
+    "politics",
+    "government",
+    "ratings",
+    "news",
+    "share opinions",
+    "Nigerian politics",
+  ],
+  authors: [
+    {
+      name: "Praise Ibe",
+      url: "https://oneyeakuko.vercel.app",
+    },
+  ],
+  icons: {
+    icon: "/favicon.ico",
+  },
+  creator: "Praise Ibe",
+  openGraph: {
+    title: "OnyeAkuko - Your AI-Powered News Curator",
+    description: "Stay informed with curated news from credible sources across all major categories",
+    url: "https://oneyeakuko.vercel.app",
+    siteName: "OnyeAkuko",
+    images: [
+      {
+        url: "/Group728.png",
+        width: 1200,
+        height: 630,
+        alt: "Your AI-Powered News Curator",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
 }
 
 export default function RootLayout({
