@@ -51,10 +51,10 @@ export function NewsArticle({
   }
 
   return (
-    <article className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
+    <article className="bg-card border-2 border-border rounded-lg overflow-hidden hover:border-[#ff9a88] transition-shadow h-full flex flex-col group">
       <div className="w-full h-48 bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
         {imageUrl && imageUrl !== "N/A" ? (
-          <img src={imageUrl || "/placeholder.svg"} alt={title} className="w-full h-full object-cover" />
+          <img src={imageUrl || "/placeholder.svg"} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl">📰</div>
         )}
@@ -63,8 +63,8 @@ export function NewsArticle({
       <div className="p-4 flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold text-accent uppercase tracking-wide">{source}</span>
-          <span className={`text-xs px-2 py-1 rounded-full font-semibold ${getSentimentColor(sentiment)}`}>
-            {getSentimentEmoji(sentiment)} {sentiment}
+          <span className={`text-xs px-2 py-1 font-semibold ${getSentimentColor(sentiment)}`}>
+           {sentiment}
           </span>
         </div>
 
@@ -72,15 +72,13 @@ export function NewsArticle({
 
         <p className="text-sm text-muted-foreground line-clamp-3 mb-4 flex-1">{description}</p>
 
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-4 pb-4 border-b border-muted">
           <span>{new Date(date).toLocaleDateString()}</span>
-          <div className="flex items-center gap-1">
-            <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
-              <div className="h-full bg-accent rounded-full" style={{ width: `${credibility * 100}%` }} />
-            </div>
-            <span className="font-semibold">{Math.round(credibility * 100)}%</span>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-foreground">{Math.round(credibility * 100)}% credible</span>
           </div>
         </div>
+
 
         <div className="flex items-center gap-2">
           <button
@@ -98,8 +96,8 @@ export function NewsArticle({
             rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
           >
-            <ExternalLink className="h-4 w-4" />
-            Read Full
+            {/* <ExternalLink className="h-4 w-4" /> */}
+             Read →
           </a>
         </div>
       </div>

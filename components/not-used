@@ -1,0 +1,100 @@
+
+/* News Article */
+/* "use client"
+
+import { useState } from "react"
+
+interface NewsArticleProps {
+  title: string
+  description: string
+  source: string
+  category: string
+  sentiment: "positive" | "neutral" | "negative"
+  date: string
+  link: string
+  credibility: number
+  imageUrl: string
+}
+
+export function NewsArticle({
+  title,
+  description,
+  source,
+  category,
+  sentiment,
+  date,
+  link,
+  credibility,
+  imageUrl,
+}: NewsArticleProps) {
+  const [isBookmarked, setIsBookmarked] = useState(false)
+
+  const getSentimentIcon = (sentiment: string) => {
+    switch (sentiment) {
+      case "positive":
+        return "↑"
+      case "negative":
+        return "↓"
+      default:
+        return "→"
+    }
+  }
+
+  return (
+    <article className="bg-card border-2 border-foreground overflow-hidden hover:shadow-xl transition-shadow h-full flex flex-col group">
+      <div className="w-full h-64 bg-muted overflow-hidden">
+        {imageUrl && imageUrl !== "N/A" ? (
+          <img
+            src={imageUrl || "/placeholder.svg"}
+            alt={title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-6xl bg-foreground text-background font-bold">
+            {category.charAt(0).toUpperCase()}
+          </div>
+        )}
+      </div>
+
+      <div className="p-6 flex-1 flex flex-col bg-card">
+        <div className="flex items-center justify-between mb-3 gap-4">
+          <span className="text-xs font-bold uppercase tracking-widest text-accent">{source}</span>
+          <span className="text-xl font-bold text-accent">{getSentimentIcon(sentiment)}</span>
+        </div>
+
+        <h3 className="text-2xl font-bold text-foreground line-clamp-3 mb-3 font-serif leading-tight">{title}</h3>
+
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1 font-sans">{description}</p>
+
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-4 pb-4 border-b border-muted">
+          <span>{new Date(date).toLocaleDateString()}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-foreground">{Math.round(credibility * 100)}% credible</span>
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => setIsBookmarked(!isBookmarked)}
+            className={`flex-1 px-4 py-2 text-sm font-bold uppercase transition-colors ${
+              isBookmarked
+                ? "bg-accent text-accent-foreground border-2 border-accent"
+                : "bg-background text-foreground border-2 border-foreground hover:bg-muted"
+            }`}
+          >
+            {isBookmarked ? "💾 Saved" : "Save"}
+          </button>
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 px-4 py-2 text-sm font-bold uppercase bg-foreground text-background border-2 border-foreground hover:bg-accent hover:border-accent transition-colors text-center"
+          >
+            Read →
+          </a>
+        </div>
+      </div>
+    </article>
+  )
+}
+*/

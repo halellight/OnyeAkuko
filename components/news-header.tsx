@@ -1,32 +1,23 @@
 "use client"
 
-import { SearchInput } from "./search-input"
 import { NotificationBell } from "./notification-bell"
 
 export function NewsHeader() {
   return (
     <header className="border-b border-border bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-              <span className="text-accent-foreground font-bold text-lg">📰</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">NewsHub</h1>
-              <p className="text-sm text-muted-foreground">AI-Powered News Curator</p>
-            </div>
+        <div className="relative flex items-center justify-center">
+          {/* Centered title */}
+          <div className="flex flex-col items-center gap-2.5">
+            <h1 className="text-6xl font-bold font-stretch-ultra-condensed font-satoshi text-foreground">
+              OnyeAkụkọ
+            </h1>
+            <p className="text-m text-muted-foreground">AI-Powered News Curator</p>
           </div>
 
-          <div className="flex-1 max-w-md mx-8">
-            <SearchInput />
-          </div>
-
-          <div className="flex items-center gap-4">
+          {/* Notification bell on the right */}
+          <div className="absolute right-0 flex items-center gap-4">
             <NotificationBell />
-            <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-              <span className="text-muted-foreground text-lg">⚙️</span>
-            </button>
           </div>
         </div>
       </div>

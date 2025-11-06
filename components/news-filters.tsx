@@ -12,14 +12,14 @@ interface NewsFiltersProps {
 }
 
 const CATEGORIES = [
-  { id: "all", label: "🌍 All News" },
-  { id: "world", label: "🌍 World News" },
+  { id: "all", label: "All News" },
+  { id: "world", label: "World News" },
   { id: "nigeria", label: "🇳🇬 Nigeria & Africa" },
-  { id: "business", label: "💼 Business & Economy" },
-  { id: "technology", label: "🧠 Technology" },
-  { id: "culture", label: "🎨 Culture & Lifestyle" },
-  { id: "politics", label: "🏛️ Politics" },
-  { id: "science", label: "💡 Science" },
+  { id: "business", label: "Business & Economy" },
+  { id: "technology", label: "Technology" },
+  { id: "culture", label: "Culture & Lifestyle" },
+  { id: "politics", label: "Politics" },
+  { id: "science", label: "Science" },
 ]
 
 const REGIONS = [
@@ -64,7 +64,7 @@ export function NewsFilters({
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 selectedCategory === cat.id
                   ? "bg-accent text-accent-foreground"
-                  : "bg-muted text-foreground hover:bg-muted/80"
+                  : "bg-muted border-2 text-foreground hover:border-[#ff9a88]"
               }`}
             >
               {cat.label}

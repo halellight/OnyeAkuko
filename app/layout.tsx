@@ -8,9 +8,9 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "NewsHub - AI-Powered News Curator",
+  title: "OnyeAkuko - AI-Powered News Curator",
   description: "Stay informed with curated news from credible sources across all major categories",
-  generator: "v0.app",
+  // generator: "v0.app",
 }
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body className={`font-sans antialiased`}>{children}</body>
       <Analytics />
     </html>
