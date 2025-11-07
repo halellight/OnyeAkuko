@@ -1,40 +1,40 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-async function sendEmailViaPostmark(to: string, subject: string, htmlBody: string) {
-  const POSTMARK_SERVER_TOKEN = process.env.POSTMARK_SERVER_TOKEN
+async function sendEmailViaMailtrap(to: string, subject: string, htmlBody: string) {
+  const MAILTRAP_API_KEY = process.env.MAILTRAP_API_KEY
+  const MAILTRAP_ACCOUNT_ID = process.env.MAILTRAP_ACCOUNT_ID
+  const MAILTRAP_INBOX_ID = process.env.MAILTRAP_INBOX_ID
 
-  if (!POSTMARK_SERVER_TOKEN) {
-    console.error("[Postmark] Server token not configured")
+  if (!MAILTRAP_API_KEY || !MAILTRAP_ACCOUNT_ID || !MAILTRAP_INBOX_ID) {
+    console.error("[Mailtrap] Configuration not complete")
     return false
   }
 
   try {
-    const response = await fetch("https://api.postmarkapp.com/email", {
+    const response = await fetch(`https://send.api.mailtrap.io/api/send/${MAILTRAP_INBOX_ID}`, {
       method: "POST",
       headers: {
-        Accept: "application/json",
         "Content-Type": "application/json",
-        "X-Postmark-Server-Token": POSTMARK_SERVER_TOKEN,
+        Authorization: `Bearer ${MAILTRAP_API_KEY}`,
       },
       body: JSON.stringify({
-        From: "news@newshub.com",
-        To: to,
-        Subject: subject,
-        HtmlBody: htmlBody,
-        MessageStream: "outbound",
+        to: [{ email: to }],
+        from: { email: "news@newshub.com", name: "NewsHub" },
+        subject,
+        html: htmlBody,
       }),
     })
 
     if (!response.ok) {
       const error = await response.text()
-      console.error("[Postmark] Send failed:", error)
+      console.error("[Mailtrap] Send failed:", error)
       return false
     }
 
-    console.log(`[Postmark] Email sent successfully to ${to}`)
+    console.log(`[Mailtrap] Email sent successfully to ${to}`)
     return true
   } catch (error) {
-    console.error("[Postmark] Error:", error)
+    console.error("[Mailtrap] Error:", error)
     return false
   }
 }
@@ -67,7 +67,7 @@ function generateDigestEmail(articles: any[], digestTime: string) {
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #ffffff;">
   <div style="max-width: 600px; margin: 0 auto; padding: 32px 16px;">
     <div style="text-align: center; margin-bottom: 32px;">
-      <h1 style="margin: 0; color: #1f2937; font-size: 28px;">📰 NewsHub</h1>
+      <h1 style="margin: 0; color: #1f2937; font-size: 28px;">📰 OnyeAkuko</h1>
       <p style="margin: 8px 0 0 0; color: #6b7280; font-size: 14px;">${digestTime} News Digest</p>
     </div>
     
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     const subject = `📰 Your ${digestTime} News Digest from NewsHub`
     const htmlBody = generateDigestEmail(articles, digestTime)
 
-    const results = await Promise.allSettled(subscribers.map((email) => sendEmailViaPostmark(email, subject, htmlBody)))
+    const results = await Promise.allSettled(subscribers.map((email) => sendEmailViaMailtrap(email, subject, htmlBody)))
 
     const successful = results.filter((r) => r.status === "fulfilled" && r.value === true).length
     const failed = results.length - successful

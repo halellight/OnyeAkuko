@@ -64,7 +64,7 @@ export function NewsFilters({
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 selectedCategory === cat.id
                   ? "bg-accent text-accent-foreground"
-                  : "bg-muted border-2 text-foreground hover:border-[#ff9a88]"
+                  : "bg-muted border-2 text-foreground hover:border-[#e59c6a]"
               }`}
             >
               {cat.label}

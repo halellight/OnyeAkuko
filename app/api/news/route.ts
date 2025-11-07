@@ -164,8 +164,12 @@ export async function POST(request: NextRequest) {
         sentiment: detectSentiment(article.title, article.description),
         region: detectRegion(article.title, article.description),
         date: article.published_at || new Date().toISOString(),
-        imageUrl: getImageUrl(article),
-        link: article.url,
+        imageUrl:
+          article.image ||
+          article.urlToImage ||
+          article.imageUrl ||
+          "https://assets.mediastack.com/images/articles/default.jpg",
+        link: article.url || article.link || "https://mediastack.com",
         credibility:
           article.source?.toLowerCase().includes("bbc") ||
           article.source?.toLowerCase().includes("reuters")
