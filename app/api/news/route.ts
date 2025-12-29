@@ -127,16 +127,14 @@ export async function POST(request: NextRequest) {
 
     const allArticles: any[] = []
 
-    console.log(`[v1] Request filters: Category=${category}, Region=${region}, Sentiment=${sentiment}, TimeRange=${timeRange}`)
-
+    console.log(`[news-api] Request filters: Category=${category}, Region=${region}, Sentiment=${sentiment}, TimeRange=${timeRange}`)
 
     // 🇳🇬 Scrape Nigerian News
     try {
-      console.log(`[v1] Fetching fresh news via Scraper (Region: ${region})...`)
+      console.log(`[news-api] Fetching fresh news via Scraper...`)
       const scraped = await scrapeNigerianNews()
       if (scraped && scraped.length > 0) {
-        console.log(`[v1] Scraper returned ${scraped.length} articles`)
-        // Map scraped articles to the expected format
+        console.log(`[news-api] Scraper returned ${scraped.length} articles`)
         const formattedScraped = scraped.map(s => ({
           ...s,
           id: `scraped-${Math.random().toString(36).substr(2, 9)}`,
@@ -144,36 +142,45 @@ export async function POST(request: NextRequest) {
         }))
         allArticles.push(...formattedScraped)
       } else {
-        console.log("[v1] Scraper returned no articles")
+        console.log("[news-api] Scraper returned no articles")
       }
     } catch (e) {
-      console.error("[v1] Scraper failed:", e)
+      console.error("[news-api] Scraper failed:", e)
     }
 
-    // 📡 Fetch from Mediastack as backup or for other regions
+    // 📡 Fetch from Mediastack
     if (MEDIASTACK_API_KEY) {
       try {
-        const url = `${MEDIASTACK_URL}?access_key=${MEDIASTACK_API_KEY}&countries=${region}&categories=${category}&languages=en&limit=50&sort=published_desc`
+        // Map region to country codes
+        let countries = ""
+        if (region === "nigeria") countries = "ng"
+        else if (region === "africa") countries = "ng,za,ke,gh"
 
+        // Map category
+        let categories = ""
+        if (category !== "all") categories = category
+
+        const url = `${MEDIASTACK_URL}?access_key=${MEDIASTACK_API_KEY}${countries ? `&countries=${countries}` : ""}${categories ? `&categories=${categories}` : ""}&languages=en&limit=50&sort=published_desc`
+
+        console.log(`[news-api] Fetching from Mediastack: ${region}`)
         const response = await fetch(url)
         if (response.ok) {
           const data = await response.json()
           if (data.data && Array.isArray(data.data)) {
+            console.log(`[news-api] Mediastack returned ${data.data.length} articles`)
             allArticles.push(...data.data)
           }
         } else {
-          console.log("[v1] Mediastack returned status:", response.status)
+          console.log("[news-api] Mediastack returned status:", response.status)
         }
       } catch (e) {
-        console.log("[v1] Mediastack query failed:", e instanceof Error ? e.message : String(e))
+        console.log("[news-api] Mediastack query failed:", e instanceof Error ? e.message : String(e))
       }
-    } else {
-      console.log("[v1] MEDIASTACK_API_KEY not set, relying on scraper/fallbacks")
     }
 
-    // If Mediastack fails, use fallback data
+    // Use fallback articles if everything else fails
     if (allArticles.length === 0) {
-      console.log("[v1] No articles from Mediastack, using fallback data")
+      console.log("[news-api] No articles from scraper or Mediastack, using fallback data")
       allArticles.push(...fallbackArticles)
     }
 
@@ -204,15 +211,17 @@ export async function POST(request: NextRequest) {
               : 0.85,
         }
       })
-      // remove duplicates by title
       .filter((article, index, self) => self.findIndex((a) => a.title === article.title) === index)
+
+    console.log(`[news-api] Articles after quality filter/deduplication: ${articles.length}`)
 
     // 📅 Filter by Time Range
     const now = new Date()
     let filteredByTime = articles
     if (timeRange === "today") {
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-      filteredByTime = articles.filter(a => new Date(a.date).getTime() >= today)
+      // Use 36 hours for "today" to be more resilient to timezones and late-night scraping
+      const thirtySixHoursAgo = now.getTime() - (36 * 60 * 60 * 1000)
+      filteredByTime = articles.filter(a => new Date(a.date).getTime() >= thirtySixHoursAgo)
     } else if (timeRange === "week") {
       const lastWeek = now.getTime() - (7 * 24 * 60 * 60 * 1000)
       filteredByTime = articles.filter(a => new Date(a.date).getTime() >= lastWeek)
@@ -221,19 +230,19 @@ export async function POST(request: NextRequest) {
       filteredByTime = articles.filter(a => new Date(a.date).getTime() >= lastMonth)
     }
 
+    console.log(`[news-api] Articles after time filter (${timeRange}): ${filteredByTime.length}`)
+
     // Filter by sentiment if specified
     let filtered = filteredByTime
     if (sentiment !== "all") filtered = filtered.filter((a) => a.sentiment === sentiment)
 
-    console.log(`[v1] Returning ${filtered.length} articles after filters (${articles.length} before date filter)`)
+    console.log(`[news-api] Final count being returned: ${filtered.length}`)
 
-
-    // ✅ Cache control for faster loads
     return NextResponse.json(filtered, {
       headers: { "Cache-Control": "s-maxage=600, stale-while-revalidate" },
     })
   } catch (error) {
-    console.error("[v1] Mediastack API error:", error)
+    console.error("[news-api] Route error:", error)
     return NextResponse.json(fallbackArticles)
   }
 }
