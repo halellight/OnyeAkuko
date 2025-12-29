@@ -120,6 +120,13 @@ const fallbackArticles = [
 ]
 
 // 📡 Main API Route
+export async function GET() {
+  return NextResponse.json({
+    message: "OnyeAkuko News API is active. Use POST to fetch articles with filters.",
+    status: "active"
+  })
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
