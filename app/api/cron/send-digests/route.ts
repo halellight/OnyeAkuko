@@ -7,75 +7,73 @@ export async function GET(request: NextRequest) {
     const cronSecret = process.env.CRON_SECRET
 
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      console.error("[Cron] Unauthorized access attempt")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Determine which digest to send based on current hour (UTC)
-    const currentHour = new Date().getUTCHours()
-    let digestTime: "Morning" | "Evening"
-    let filterMorning: boolean
+    // Determine which digest to send based on current hour (UTC) or query param
+    const { searchParams } = new URL(request.url)
+    const forceTime = searchParams.get("force") // "Morning" or "Evening"
 
-    // 9 AM UTC = Morning digest
-    // 19 (7 PM) UTC = Evening digest
-    if (currentHour === 9) {
+    const currentHour = new Date().getUTCHours()
+    let digestTime: "Morning" | "Evening" | null = null
+
+    if (forceTime === "Morning" || forceTime === "Evening") {
+      digestTime = forceTime
+    } else if (currentHour === 9) {
       digestTime = "Morning"
-      filterMorning = true
     } else if (currentHour === 19) {
       digestTime = "Evening"
-      filterMorning = false
-    } else {
-      return NextResponse.json({ message: "Not a scheduled digest time" }, { status: 200 })
     }
 
-    // Fetch subscribers (in production, query from database)
-    const subsResponse = await fetch(`${request.nextUrl.origin}/api/notifications/subscribe`, {
-      method: "GET",
-    })
-    const subsData = await subsResponse.json()
-    const allSubscribers = subsData.subscriptions || []
-
-    // Filter subscribers based on digest time preference
-    const filteredSubscribers = allSubscribers
-      .filter((sub: any) => {
-        if (filterMorning) {
-          return sub.digestTimes?.morning === true
-        } else {
-          return sub.digestTimes?.evening === true
-        }
-      })
-      .map((sub: any) => sub.email)
-
-    if (filteredSubscribers.length === 0) {
-      return NextResponse.json({ message: "No subscribers for this digest time" }, { status: 200 })
+    if (!digestTime) {
+      console.log(`[Cron] Not a scheduled time (Hour: ${currentHour} UTC) and no force param.`)
+      return NextResponse.json({ message: "Not a scheduled digest time", hour: currentHour }, { status: 200 })
     }
+
+    console.log(`[Cron] Triggering ${digestTime} digest...`)
 
     // Fetch latest articles
-    const articlesResponse = await fetch(`${request.nextUrl.origin}/api/news`, {
+    const origin = request.nextUrl.origin
+    const articlesResponse = await fetch(`${origin}/api/news`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ region: "ng" }), // Prioritize Nigerian news for digest
     })
-    const articles = await articlesResponse.json()
 
-    // Send digest
-    const sendResponse = await fetch(`${request.nextUrl.origin}/api/notifications/send`, {
+    if (!articlesResponse.ok) {
+      throw new Error(`Failed to fetch articles: ${articlesResponse.statusText}`)
+    }
+
+    const articles = await articlesResponse.json()
+    const digestArticles = articles.slice(0, 5)
+
+    // Trigger the send route
+    // We don't pass 'subscribers' here so the send route fetches them from Supabase
+    const sendResponse = await fetch(`${origin}/api/notifications/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        subscribers: filteredSubscribers,
-        articles: articles.slice(0, 5),
+        articles: digestArticles,
         digestTime,
       }),
     })
 
+    if (!sendResponse.ok) {
+      const errorText = await sendResponse.text()
+      throw new Error(`Send route failed: ${errorText}`)
+    }
+
     const sendResult = await sendResponse.json()
 
+    console.log(`[Cron] ${digestTime} digest completed:`, sendResult)
+
     return NextResponse.json({
-      message: `${digestTime} digest sent successfully`,
+      message: `${digestTime} digest process completed`,
       ...sendResult,
     })
   } catch (error) {
-    console.error("Cron job error:", error)
-    return NextResponse.json({ error: "Failed to send digests" }, { status: 500 })
+    console.error("[Cron] Critical error:", error)
+    return NextResponse.json({ error: "Failed to process cron job", details: error instanceof Error ? error.message : String(error) }, { status: 500 })
   }
 }

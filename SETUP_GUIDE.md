@@ -1,73 +1,61 @@
-# NewsHub AI News Agent - Setup Guide
+# OnyeAkuko AI News Agent - Setup Guide
 
 ## Overview
-Complete AI-powered news aggregation system with twice-daily email digests featuring Nigerian news sources.
+Intelligence digest platform for the modern Nigerian observer, featuring automated news curation and delivery.
 
 ## Features
 - ✅ News from Daily Trust, TechCabal, Punch, ThisDay, Sahara Reporters, Semafor
 - ✅ Email subscriptions with time preferences (9 AM / 7 PM)
-- ✅ Postmark email integration
-- ✅ Automated cron job scheduling
+- ✅ Mailtrap Sending API integration (Domain: `onyeakuko.online`)
+- ✅ Automated cron job scheduling via Vercel
+- ✅ Supabase persistence for subscribers
 - ✅ Category, region, and sentiment filtering
 
 ## Environment Variables
 
-Add these to your Vercel project:
+Add these to your `.env.local` and your Vercel project:
 
-\`\`\`bash
-POSTMARK_SERVER_TOKEN=your_postmark_token_here
-CRON_SECRET=your_secure_random_string_here
-\`\`\`
+```bash
+# Mailtrap
+MAILTRAP_API_KEY="your_api_key"
 
-## Postmark Setup
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL="your_url"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your_key"
+SUPABASE_SERVICE_ROLE_KEY="your_service_key"
 
-1. Sign up at https://postmarkapp.com
-2. Create a new server
-3. Get your Server API Token
-4. Add token to environment variables
-5. Verify sender signature (news@yourdomain.com)
+# Security
+CRON_SECRET="your_secure_random_string_here"
+```
+
+## Mailtrap Setup
+
+1. Sign up at [mailtrap.io](https://mailtrap.io)
+2. Add and verify your domain: `onyeakuko.online`
+3. Add the DNS records provided by Mailtrap to your registrar.
+4. Get your API Token from **Settings > API Tokens**.
 
 ## Cron Job Setup
 
-### Option 1: Vercel Cron (Recommended)
+The project uses `vercel.json` for scheduling. When you deploy to Vercel, it will automatically register:
+- **Morning Digest**: 09:00 UTC
+- **Evening Digest**: 19:00 UTC
 
-Add to `vercel.json`:
+### Manual Testing (Local)
+Ensure your local server is running (`npm run dev`), then use PowerShell:
 
-\`\`\`json
-{
-  "crons": [
-    {
-      "path": "/api/cron/send-digests",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/send-digests",
-      "schedule": "0 19 * * *"
-    }
-  ]
-}
-\`\`\`
+```powershell
+# Morning
+Invoke-RestMethod -Uri "http://localhost:3000/api/cron/send-digests?force=Morning" -Headers @{"Authorization"="Bearer your_cron_secret"} -Method Get
 
-### Option 2: External Cron Service
+# Evening
+Invoke-RestMethod -Uri "http://localhost:3000/api/cron/send-digests?force=Evening" -Headers @{"Authorization"="Bearer your_cron_secret"} -Method Get
+```
 
-Use services like:
-- Cron-job.org
-- EasyCron
-- AWS EventBridge
+## Database Integration
+The system uses Supabase. Ensure your `subscriptions` table is set up:
 
-Configure to call:
-\`\`\`
-GET https://your-domain.com/api/cron/send-digests
-Authorization: Bearer YOUR_CRON_SECRET
-\`\`\`
-
-At: 09:00 UTC and 19:00 UTC daily
-
-## Database Integration (Production)
-
-Replace in-memory storage with Supabase or Neon:
-
-\`\`\`sql
+```sql
 CREATE TABLE subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
@@ -75,29 +63,13 @@ CREATE TABLE subscriptions (
   evening_digest BOOLEAN DEFAULT true,
   subscribed_at TIMESTAMP DEFAULT NOW()
 );
-\`\`\`
-
-## Testing
-
-Test subscription:
-\`\`\`bash
-curl -X POST https://your-domain.com/api/notifications/subscribe \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","digestTimes":{"morning":true,"evening":true}}'
-\`\`\`
-
-Test digest sending:
-\`\`\`bash
-curl https://your-domain.com/api/cron/send-digests \
-  -H "Authorization: Bearer YOUR_CRON_SECRET"
-\`\`\`
+```
 
 ## Deployment
-
 1. Push to GitHub
 2. Connect to Vercel
-3. Add environment variables
+3. Add all environment variables listed above
 4. Deploy
-5. Configure cron jobs
+5. Verify domain on Mailtrap
 
-Your AI News Agent is now live! 🚀
+Your OnyeAkuko News Agent is now live! 🚀

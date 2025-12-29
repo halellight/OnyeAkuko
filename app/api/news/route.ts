@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { scrapeNigerianNews } from "@/lib/news-scraper"
 
 const MEDIASTACK_API_KEY = process.env.MEDIASTACK_API_KEY
 const MEDIASTACK_URL = "https://api.mediastack.com/v1/news" // ✅ HTTPS
@@ -126,6 +127,26 @@ export async function POST(request: NextRequest) {
 
     const allArticles: any[] = []
 
+    // 🇳🇬 Scrape Nigerian News if region is NG
+    if (region === "ng") {
+      try {
+        console.log("[v1] Fetching fresh news via Scraper...")
+        const scraped = await scrapeNigerianNews()
+        if (scraped && scraped.length > 0) {
+          // Map scraped articles to the expected format
+          const formattedScraped = scraped.map(s => ({
+            ...s,
+            id: `scraped-${Math.random().toString(36).substr(2, 9)}`,
+            published_at: s.date
+          }))
+          allArticles.push(...formattedScraped)
+        }
+      } catch (e) {
+        console.error("[v1] Scraper failed:", e)
+      }
+    }
+
+    // 📡 Fetch from Mediastack as backup or for other regions
     if (MEDIASTACK_API_KEY) {
       try {
         const url = `${MEDIASTACK_URL}?access_key=${MEDIASTACK_API_KEY}&countries=${region}&categories=${category}&languages=en&limit=50&sort=published_desc`
@@ -143,7 +164,7 @@ export async function POST(request: NextRequest) {
         console.log("[v1] Mediastack query failed:", e instanceof Error ? e.message : String(e))
       }
     } else {
-      console.log("[v1] MEDIASTACK_API_KEY not set, using fallback articles")
+      console.log("[v1] MEDIASTACK_API_KEY not set, relying on scraper/fallbacks")
     }
 
     // If Mediastack fails, use fallback data
@@ -172,7 +193,7 @@ export async function POST(request: NextRequest) {
         link: article.url || article.link || "https://mediastack.com",
         credibility:
           article.source?.toLowerCase().includes("bbc") ||
-          article.source?.toLowerCase().includes("reuters")
+            article.source?.toLowerCase().includes("reuters")
             ? 0.95
             : 0.85,
       }))

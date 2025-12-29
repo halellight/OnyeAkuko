@@ -19,6 +19,7 @@ const nigerianSources = [
       description: ".post-excerpt, p",
       link: "a",
       date: ".post-date, time",
+      image: "img",
     },
   },
   {
@@ -30,6 +31,7 @@ const nigerianSources = [
       description: ".excerpt, p",
       link: "a",
       date: ".date, time",
+      image: "img",
     },
   },
   {
@@ -41,6 +43,7 @@ const nigerianSources = [
       description: ".story-text, p",
       link: "a",
       date: ".story-date, time",
+      image: "img",
     },
   },
   {
@@ -52,6 +55,7 @@ const nigerianSources = [
       description: ".article-excerpt, p",
       link: "a",
       date: ".publish-date, time",
+      image: ".article-image img, img",
     },
   },
   {
@@ -63,6 +67,7 @@ const nigerianSources = [
       description: ".story-summary, p",
       link: "a",
       date: ".story-time, time",
+      image: ".story-image img, img",
     },
   },
   {
@@ -74,6 +79,7 @@ const nigerianSources = [
       description: ".story-text, p",
       link: "a",
       date: ".time, time",
+      image: "img",
     },
   },
 ]
@@ -107,12 +113,18 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
           const descEl = article.querySelector(source.selectors.description)
           const linkEl = article.querySelector(source.selectors.link)
           const dateEl = article.querySelector(source.selectors.date)
+          const imageEl = source.selectors.image ? article.querySelector(source.selectors.image) : null
 
           if (titleEl && linkEl) {
             const title = titleEl.textContent?.trim() || ""
             const description = descEl?.textContent?.trim() || ""
             const link = linkEl.getAttribute("href") || ""
             const date = dateEl?.textContent?.trim() || new Date().toISOString()
+
+            let imageUrl = imageEl?.getAttribute("src") || imageEl?.getAttribute("data-src") || undefined
+            if (imageUrl && !imageUrl.startsWith("http")) {
+              imageUrl = new URL(imageUrl, source.url).toString()
+            }
 
             if (title && title.length > 10) {
               allArticles.push({
@@ -121,6 +133,7 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
                 source: source.name,
                 date,
                 link: link.startsWith("http") ? link : new URL(link, source.url).toString(),
+                imageUrl,
               })
             }
           }
