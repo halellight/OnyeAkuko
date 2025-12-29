@@ -38,8 +38,7 @@ CRON_SECRET="your_secure_random_string_here"
 ## Cron Job Setup
 
 The project uses `vercel.json` for scheduling. When you deploy to Vercel, it will automatically register:
-- **Morning Digest**: 09:00 UTC
-- **Evening Digest**: 19:00 UTC
+- **Daily Digest**: 09:00 UTC (Limit: 1/day on Hobby Tier)
 
 ### Manual Testing (Local)
 Ensure your local server is running (`npm run dev`), then use PowerShell:
