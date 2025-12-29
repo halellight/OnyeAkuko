@@ -31,7 +31,7 @@ export default function Dashboard() {
     const loadArticles = async () => {
       setLoading(true)
       try {
-        const response = await fetch("/api/news", {
+        const response = await fetch("/api/fetch-news", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -62,11 +62,11 @@ export default function Dashboard() {
 
   const filteredArticles = Array.isArray(articles)
     ? articles.filter((article) => {
-        if (selectedCategory !== "all" && article.category !== selectedCategory) return false
-        if (selectedRegion !== "all" && article.region !== selectedRegion) return false
-        if (selectedSentiment !== "all" && article.sentiment !== selectedSentiment) return false
-        return true
-      })
+      if (selectedCategory !== "all" && article.category !== selectedCategory) return false
+      if (selectedRegion !== "all" && article.region !== selectedRegion) return false
+      if (selectedSentiment !== "all" && article.sentiment !== selectedSentiment) return false
+      return true
+    })
     : []
 
   return (
