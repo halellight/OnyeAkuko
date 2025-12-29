@@ -84,7 +84,7 @@ const fallbackArticles = [
     category: "technology",
     sentiment: "positive",
     region: "nigeria",
-    date: new Date().toISOString(),
+    date: new Date().toISOString(), // Fresh today
     imageUrl: "/nigerian-tech-startup.jpg",
     link: "https://techcabal.com",
     credibility: 0.9,
@@ -98,7 +98,7 @@ const fallbackArticles = [
     category: "business",
     sentiment: "positive",
     region: "nigeria",
-    date: new Date(Date.now() - 86400000).toISOString(),
+    date: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
     imageUrl: "/nigerian-fintech.jpg",
     link: "https://punchng.com",
     credibility: 0.88,
@@ -112,7 +112,7 @@ const fallbackArticles = [
     category: "technology",
     sentiment: "neutral",
     region: "africa",
-    date: new Date(Date.now() - 172800000).toISOString(),
+    date: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
     imageUrl: "/african-tech-summit.jpg",
     link: "https://dailytrust.com.ng",
     credibility: 0.87,
@@ -123,27 +123,31 @@ const fallbackArticles = [
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { category = "general", region = "ng", sentiment = "all" } = body
+    const { category = "all", region = "all", sentiment = "all", timeRange = "today" } = body
 
     const allArticles: any[] = []
 
-    // 🇳🇬 Scrape Nigerian News if region is NG
-    if (region === "ng") {
-      try {
-        console.log("[v1] Fetching fresh news via Scraper...")
-        const scraped = await scrapeNigerianNews()
-        if (scraped && scraped.length > 0) {
-          // Map scraped articles to the expected format
-          const formattedScraped = scraped.map(s => ({
-            ...s,
-            id: `scraped-${Math.random().toString(36).substr(2, 9)}`,
-            published_at: s.date
-          }))
-          allArticles.push(...formattedScraped)
-        }
-      } catch (e) {
-        console.error("[v1] Scraper failed:", e)
+    console.log(`[v1] Request filters: Category=${category}, Region=${region}, Sentiment=${sentiment}, TimeRange=${timeRange}`)
+
+
+    // 🇳🇬 Scrape Nigerian News
+    try {
+      console.log(`[v1] Fetching fresh news via Scraper (Region: ${region})...`)
+      const scraped = await scrapeNigerianNews()
+      if (scraped && scraped.length > 0) {
+        console.log(`[v1] Scraper returned ${scraped.length} articles`)
+        // Map scraped articles to the expected format
+        const formattedScraped = scraped.map(s => ({
+          ...s,
+          id: `scraped-${Math.random().toString(36).substr(2, 9)}`,
+          published_at: s.date
+        }))
+        allArticles.push(...formattedScraped)
+      } else {
+        console.log("[v1] Scraper returned no articles")
       }
+    } catch (e) {
+      console.error("[v1] Scraper failed:", e)
     }
 
     // 📡 Fetch from Mediastack as backup or for other regions
@@ -176,36 +180,53 @@ export async function POST(request: NextRequest) {
     // 🧠 Transform + Clean Articles
     const articles = allArticles
       .filter(isQualityArticle)
-      .map((article: any, index: number) => ({
-        id: article.id || `${index}-${Date.now()}`,
-        title: article.title,
-        description: article.description || "",
-        source: article.source || "Unknown",
-        category: detectCategory(article.title, article.description),
-        sentiment: detectSentiment(article.title, article.description),
-        region: detectRegion(article.title, article.description),
-        date: article.published_at || new Date().toISOString(),
-        imageUrl:
-          article.image ||
-          article.urlToImage ||
-          article.imageUrl ||
-          "https://assets.mediastack.com/images/articles/default.jpg",
-        link: article.url || article.link || "https://mediastack.com",
-        credibility:
-          article.source?.toLowerCase().includes("bbc") ||
-            article.source?.toLowerCase().includes("reuters")
-            ? 0.95
-            : 0.85,
-      }))
+      .map((article: any, index: number) => {
+        const date = article.published_at || article.date || new Date().toISOString()
+        return {
+          id: article.id || `${index}-${Date.now()}`,
+          title: article.title,
+          description: article.description || "",
+          source: article.source || "Unknown",
+          category: detectCategory(article.title, article.description),
+          sentiment: detectSentiment(article.title, article.description),
+          region: detectRegion(article.title, article.description),
+          date: date,
+          imageUrl:
+            article.imageUrl ||
+            article.image ||
+            article.urlToImage ||
+            "https://assets.mediastack.com/images/articles/default.jpg",
+          link: article.url || article.link || "https://mediastack.com",
+          credibility:
+            article.source?.toLowerCase().includes("bbc") ||
+              article.source?.toLowerCase().includes("reuters")
+              ? 0.95
+              : 0.85,
+        }
+      })
       // remove duplicates by title
       .filter((article, index, self) => self.findIndex((a) => a.title === article.title) === index)
-      .slice(0, 60)
+
+    // 📅 Filter by Time Range
+    const now = new Date()
+    let filteredByTime = articles
+    if (timeRange === "today") {
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+      filteredByTime = articles.filter(a => new Date(a.date).getTime() >= today)
+    } else if (timeRange === "week") {
+      const lastWeek = now.getTime() - (7 * 24 * 60 * 60 * 1000)
+      filteredByTime = articles.filter(a => new Date(a.date).getTime() >= lastWeek)
+    } else if (timeRange === "month") {
+      const lastMonth = now.getTime() - (30 * 24 * 60 * 60 * 1000)
+      filteredByTime = articles.filter(a => new Date(a.date).getTime() >= lastMonth)
+    }
 
     // Filter by sentiment if specified
-    let filtered = articles
+    let filtered = filteredByTime
     if (sentiment !== "all") filtered = filtered.filter((a) => a.sentiment === sentiment)
 
-    console.log("[v1] Returning", filtered.length, "articles")
+    console.log(`[v1] Returning ${filtered.length} articles after filters (${articles.length} before date filter)`)
+
 
     // ✅ Cache control for faster loads
     return NextResponse.json(filtered, {
