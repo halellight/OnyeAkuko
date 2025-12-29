@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { scrapeNigerianNews } from "@/lib/news-scraper"
+// import { scrapeNigerianNews } from "@/lib/news-scraper"
 
 const MEDIASTACK_API_KEY = process.env.MEDIASTACK_API_KEY
 const MEDIASTACK_URL = "https://api.mediastack.com/v1/news" // ✅ HTTPS
@@ -139,7 +139,8 @@ export async function POST(request: NextRequest) {
     // 🇳🇬 Scrape Nigerian News
     try {
       console.log(`[news-api] Fetching fresh news via Scraper...`)
-      const scraped = await scrapeNigerianNews()
+      // const scraped = await scrapeNigerianNews()
+      const scraped: any[] = []
       if (scraped && scraped.length > 0) {
         console.log(`[news-api] Scraper returned ${scraped.length} articles`)
         const formattedScraped = scraped.map(s => ({
