@@ -16,6 +16,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# readme files
+
+SETUP_GUIDE.md*
+SETUP_MAILTRAP.md*
+SETUP_CRON.md*
+
 # env files
 .env*
 
