@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom"
+import * as cheerio from "cheerio"
 
 interface ScrapedArticle {
   title: string
@@ -101,29 +101,27 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
         }
 
         const html = await response.text()
-        const dom = new JSDOM(html)
-        const document = dom.window.document
-
-        const articles = document.querySelectorAll(source.selectors.article)
+        const $ = cheerio.load(html)
         const sourceArticles: ScrapedArticle[] = []
 
-        articles.forEach((article) => {
+        $(source.selectors.article).each((_, element) => {
           try {
-            const titleEl = article.querySelector(source.selectors.title)
-            const descEl = article.querySelector(source.selectors.description)
-            const linkEl = article.querySelector(source.selectors.link)
-            const dateEl = article.querySelector(source.selectors.date)
-            const imageEl = source.selectors.image ? article.querySelector(source.selectors.image) : null
+            const article = $(element)
+            const titleEl = article.find(source.selectors.title).first()
+            const descEl = article.find(source.selectors.description).first()
+            const linkEl = article.find(source.selectors.link).first()
+            const dateEl = article.find(source.selectors.date).first()
+            const imageEl = source.selectors.image ? article.find(source.selectors.image).first() : null
 
-            if (titleEl && linkEl) {
-              const title = titleEl.textContent?.trim() || ""
-              const description = descEl?.textContent?.trim() || ""
-              const link = linkEl.getAttribute("href") || ""
+            const title = titleEl.text().trim()
+            const link = linkEl.attr("href") || ""
+
+            if (title && link) {
+              const description = descEl.text().trim() || ""
 
               // Resilient date parsing
-              let rawDate = dateEl?.textContent?.trim() || ""
+              let rawDate = dateEl.text().trim() || ""
               let date = new Date().toISOString()
-
               if (rawDate) {
                 const parsed = new Date(rawDate)
                 if (!isNaN(parsed.getTime())) {
@@ -131,12 +129,12 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
                 }
               }
 
-              let imageUrl = imageEl?.getAttribute("src") || imageEl?.getAttribute("data-src") || undefined
+              let imageUrl = imageEl?.attr("src") || imageEl?.attr("data-src") || undefined
               if (imageUrl && !imageUrl.startsWith("http")) {
                 imageUrl = new URL(imageUrl, source.url).toString()
               }
 
-              if (title && title.length > 10) {
+              if (title.length > 10) {
                 sourceArticles.push({
                   title,
                   description,
@@ -153,7 +151,7 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
         })
 
         console.log(`[scraper] Scraped ${sourceArticles.length} articles from ${source.name}`)
-        return sourceArticles
+        return sourceArticles.slice(0, 10) // Limit per source for performance
       } catch (error) {
         console.log(`[scraper] Error for ${source.name}:`, error instanceof Error ? error.message : String(error))
         return []
@@ -161,6 +159,5 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
     })
   )
 
-  const allArticles = results.flatMap((result) => (result.status === "fulfilled" ? result.value : []))
-  return allArticles
+  return results.flatMap((result) => (result.status === "fulfilled" ? result.value : []))
 }

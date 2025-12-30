@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-// import { scrapeNigerianNews } from "@/lib/news-scraper"
+import { scrapeNigerianNews } from "@/lib/news-scraper"
 
 const MEDIASTACK_API_KEY = process.env.MEDIASTACK_API_KEY
 const MEDIASTACK_URL = "https://api.mediastack.com/v1/news"
@@ -73,8 +73,7 @@ export async function GET(request: NextRequest) {
     const allArticles: any[] = []
     console.log(`[news-api] GET Request: Category=${category}, Region=${region}, TimeRange=${timeRange}`)
 
-    // 🇳🇬 Scraper (Optimized/Parallel) - Temporarily disabled for 500 isolation
-    /*
+    // 🇳🇬 Scraper (Optimized/Parallel)
     try {
       const scraped = await scrapeNigerianNews()
       if (scraped && scraped.length > 0) {
@@ -87,7 +86,6 @@ export async function GET(request: NextRequest) {
     } catch (e) {
       console.error("[news-api] Scraper failed:", e)
     }
-    */
     // 📡 Mediastack
     if (MEDIASTACK_API_KEY) {
       try {
