@@ -1,6 +1,5 @@
-export const dynamic = 'force-dynamic'
 import { type NextRequest, NextResponse } from "next/server"
-import { scrapeNigerianNews } from "@/lib/news-scraper"
+// import { scrapeNigerianNews } from "@/lib/news-scraper"
 
 const MEDIASTACK_API_KEY = process.env.MEDIASTACK_API_KEY
 const MEDIASTACK_URL = "https://api.mediastack.com/v1/news"
