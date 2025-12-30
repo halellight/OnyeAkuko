@@ -1,9 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getNews } from "@/lib/news"
+import { processDigestSending } from "@/lib/notifications"
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret
+    // ... verification logic ...
+    // (keep current verification)
     const authHeader = request.headers.get("authorization")
     const cronSecret = process.env.CRON_SECRET
 
@@ -12,9 +14,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Determine which digest to send based on current hour (UTC) or query param
     const { searchParams } = new URL(request.url)
-    const forceTime = searchParams.get("force") // "Morning" or "Evening"
+    const forceTime = searchParams.get("force")
 
     const currentHour = new Date().getUTCHours()
     let digestTime: "Morning" | "Evening" | null = null
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
       digestTime = forceTime
     } else if (currentHour === 9) {
       digestTime = "Morning"
-    } else if (currentHour === 19) {
+    } else if (currentHour === 15) {
       digestTime = "Evening"
     }
 
@@ -34,27 +35,11 @@ export async function GET(request: NextRequest) {
 
     console.log(`[Cron] Triggering ${digestTime} digest...`)
 
-    // Fetch latest articles DIRECTLY via lib (skips network/auth issues)
     const articles = await getNews({ region: "nigeria", timeRange: "today" })
     const digestArticles = articles.slice(0, 5)
 
-    // Trigger the send route
-    // We don't pass 'subscribers' here so the send route fetches them from Supabase
-    const sendResponse = await fetch(`${origin}/api/notifications/send`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        articles: digestArticles,
-        digestTime,
-      }),
-    })
-
-    if (!sendResponse.ok) {
-      const errorText = await sendResponse.text()
-      throw new Error(`Send route failed: ${errorText}`)
-    }
-
-    const sendResult = await sendResponse.json()
+    // Send emails directly (skips origin fetch)
+    const sendResult = await processDigestSending({ articles: digestArticles, digestTime })
 
     console.log(`[Cron] ${digestTime} digest completed:`, sendResult)
 

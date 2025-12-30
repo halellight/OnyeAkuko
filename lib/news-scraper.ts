@@ -26,12 +26,12 @@ const nigerianSources = [
     name: "Punch Nigeria",
     url: "https://punchng.com",
     selectors: {
-      article: "article, .post-item-list",
-      title: "h2 a, h3 a, .post-title a",
-      description: ".excerpt, p, .post-excerpt",
+      article: "article, .entry-item-simple, .feature-article",
+      title: "h2 a, h3 a, .post-title a, .entry-title a",
+      description: ".excerpt, p, .post-excerpt, .entry-excerpt",
       link: "a",
-      date: ".date, time, .post-date",
-      image: "img, .post-image img",
+      date: ".date, time, .post-date, .entry-date",
+      image: ".article-image-container img, .post-image img, .entry-image img, img",
     },
   },
   {
@@ -71,15 +71,27 @@ const nigerianSources = [
     },
   },
   {
+    name: "Information Nigeria",
+    url: "https://www.informationng.com",
+    selectors: {
+      article: "article, .td_module_wrap, .td-block-span6",
+      title: "h2 a, h3 a, .jeg_post_title a, .entry-title a",
+      description: ".post-excerpt, p, .jeg_post_excerpt p, .td-excerpt",
+      link: "a",
+      date: ".post-date, time, .jeg_meta_date, .td-post-date",
+      image: ".td-image-wrap span, .td-thumb-css, img, .jeg_thumb img",
+    },
+  },
+  {
     name: "Vanguard Nigeria",
     url: "https://www.vanguardngr.com",
     selectors: {
-      article: "article, .rt-news-box-item",
+      article: "article, .entry-card, .entry-list-card, .rt-news-box-item",
       title: "h2 a, h3 a, .entry-title a",
-      description: ".story-text, p, .rt-news-box-content p",
+      description: ".story-text, p, .rt-news-box-content p, .entry-content",
       link: "a",
-      date: ".time, time",
-      image: "img, .rt-news-box-img img",
+      date: ".time, time, .entry-date",
+      image: ".entry-thumbnail-wrapper img, .entry-thumbnail img, img",
     },
   },
 ]
@@ -129,20 +141,35 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
                 }
               }
 
-              // Enhanced Image Extraction (src, data-src, srcset)
+              // Enhanced Image Extraction
               let imageUrl = undefined
               if (imageEl) {
-                imageUrl = imageEl.attr("src") || imageEl.attr("data-src") || imageEl.attr("data-original")
+                // Check for standard img attributes
+                imageUrl = imageEl.attr("data-src") || imageEl.attr("data-original") || imageEl.attr("data-lazy-src") || imageEl.attr("src")
 
-                // Handle srcset if needed (take the first URL)
-                if (!imageUrl && imageEl.attr("srcset")) {
+                // Handle background-image (common in TagDiv/Information Nigeria)
+                if (!imageUrl || imageUrl.includes("data:image")) {
+                  const style = imageEl.attr("style") || ""
+                  const bgMatch = style.match(/background-image:\s*url\((['"]?)(.*?)\1\)/)
+                  if (bgMatch) imageUrl = bgMatch[2]
+                }
+
+                // Handle srcset if needed
+                if ((!imageUrl || imageUrl.includes("data:image")) && imageEl.attr("srcset")) {
                   const srcset = imageEl.attr("srcset") || ""
                   imageUrl = srcset.split(",")[0].trim().split(" ")[0]
+                }
+
+                // Filter out generic logos or small icons
+                if (imageUrl) {
+                  const lowers = imageUrl.toLowerCase()
+                  if (lowers.includes("logo") || lowers.includes("icon") || lowers.includes("placeholder")) {
+                    imageUrl = undefined
+                  }
                 }
               }
 
               if (imageUrl && !imageUrl.startsWith("http")) {
-                // Check if it's a protocol-relative URL
                 if (imageUrl.startsWith("//")) {
                   imageUrl = "https:" + imageUrl
                 } else {
