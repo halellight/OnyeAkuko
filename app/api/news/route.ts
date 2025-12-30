@@ -74,7 +74,8 @@ export async function GET(request: NextRequest) {
     const allArticles: any[] = []
     console.log(`[news-api] GET Request: Category=${category}, Region=${region}, TimeRange=${timeRange}`)
 
-    // 🇳🇬 Scraper (Optimized/Parallel)
+    // 🇳🇬 Scraper (Optimized/Parallel) - Temporarily disabled for 500 isolation
+    /*
     try {
       const scraped = await scrapeNigerianNews()
       if (scraped && scraped.length > 0) {
@@ -87,7 +88,7 @@ export async function GET(request: NextRequest) {
     } catch (e) {
       console.error("[news-api] Scraper failed:", e)
     }
-
+    */
     // 📡 Mediastack
     if (MEDIASTACK_API_KEY) {
       try {
