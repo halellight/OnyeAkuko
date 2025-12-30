@@ -100,7 +100,6 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
-  Riverside
   try {
     const body = await request.json()
     const { category = "all", region = "all", sentiment = "all", timeRange = "today" } = body
