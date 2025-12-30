@@ -31,15 +31,15 @@ export default function Dashboard() {
     const loadArticles = async () => {
       setLoading(true)
       try {
-        const response = await fetch("/api/fetch-news", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            category: selectedCategory !== "all" ? selectedCategory : undefined,
-            region: selectedRegion !== "all" ? selectedRegion : undefined,
-            sentiment: selectedSentiment !== "all" ? selectedSentiment : undefined,
-            timeRange,
-          }),
+        const params = new URLSearchParams({
+          category: selectedCategory,
+          region: selectedRegion,
+          sentiment: selectedSentiment,
+          timeRange: timeRange
+        })
+        const response = await fetch(`/api/fetch-news?${params.toString()}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" }
         })
         const data = await response.json()
 

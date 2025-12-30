@@ -99,13 +99,16 @@ export async function OPTIONS() {
   })
 }
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { category = "all", region = "all", sentiment = "all", timeRange = "today" } = body
+    const { searchParams } = new URL(request.url)
+    const category = searchParams.get("category") || "all"
+    const region = searchParams.get("region") || "all"
+    const sentiment = searchParams.get("sentiment") || "all"
+    const timeRange = searchParams.get("timeRange") || "today"
 
     const allArticles: any[] = []
-    console.log(`[news-api] Request: Category=${category}, Region=${region}, TimeRange=${timeRange}`)
+    console.log(`[news-api] GET Request: Category=${category}, Region=${region}, TimeRange=${timeRange}`)
 
     // 🇳🇬 Scraper (Optimized/Parallel)
     try {
@@ -138,7 +141,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (allArticles.length === 0) allArticles.push(...fallbackArticles)
+    if (allArticles.length === 0) {
+      console.log("[news-api] No real-time articles, using fallbacks")
+      allArticles.push(...fallbackArticles)
+    }
 
     // Transform & Filter
     const articles = allArticles
@@ -171,7 +177,12 @@ export async function POST(request: NextRequest) {
     console.log(`[news-api] Returning ${filtered.length} articles`)
     return NextResponse.json(filtered)
   } catch (error) {
-    console.error("[news-api] POST Error:", error)
+    console.error("[news-api] GET Error:", error)
     return NextResponse.json(fallbackArticles)
   }
+}
+
+// Redirect POST to GET for compatibility
+export async function POST(request: NextRequest) {
+  return GET(request)
 }
