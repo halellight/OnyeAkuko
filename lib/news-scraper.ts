@@ -93,8 +93,6 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
           },
-          // Set a timeout for individual requests to prevent one slow site from hanging everything
-          signal: AbortSignal.timeout(8000),
         })
 
         if (!response.ok) {

@@ -88,14 +88,19 @@ const fallbackArticles = [
 ]
 
 // 📡 Main API Route
-export async function GET() {
-  return NextResponse.json({
-    message: "OnyeAkuko News API is active. Use POST to fetch articles.",
-    status: "active"
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
   })
 }
 
 export async function POST(request: NextRequest) {
+  Riverside
   try {
     const body = await request.json()
     const { category = "all", region = "all", sentiment = "all", timeRange = "today" } = body
