@@ -35,10 +35,9 @@ export async function GET(request: NextRequest) {
 
     // Fetch latest articles
     const origin = request.nextUrl.origin
-    const articlesResponse = await fetch(`${origin}/api/news`, {
-      method: "POST",
+    const articlesResponse = await fetch(`${origin}/api/news?region=nigeria&timeRange=today`, {
+      method: "GET",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ region: "ng" }), // Prioritize Nigerian news for digest
     })
 
     if (!articlesResponse.ok) {

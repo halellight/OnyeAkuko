@@ -151,7 +151,7 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
         })
 
         console.log(`[scraper] Scraped ${sourceArticles.length} articles from ${source.name}`)
-        return sourceArticles.slice(0, 10) // Limit per source for performance
+        return sourceArticles.slice(0, 30) // Increased limit to provide more variety for filtering
       } catch (error) {
         console.log(`[scraper] Error for ${source.name}:`, error instanceof Error ? error.message : String(error))
         return []

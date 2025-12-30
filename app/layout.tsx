@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   authors: [
     {
       name: "Praise Ibe",
-      url: "https://oneyeakuko.vercel.app",
+      url: "https://oneyeakuko.online",
     },
   ],
   icons: {
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "OnyeAkuko - Your AI-Powered News Curator",
     description: "Stay informed with curated news from credible sources across all major categories",
-    url: "https://oneyeakuko.vercel.app",
+    url: "https://oneyeakuko.online",
     siteName: "OnyeAkuko",
     images: [
       {
