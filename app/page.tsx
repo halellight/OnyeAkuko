@@ -41,7 +41,6 @@ export default function Dashboard() {
           method: "GET",
           headers: { "Content-Type": "application/json" }
         })
-        Riverside
         const data = await response.json()
 
         if (Array.isArray(data)) {
