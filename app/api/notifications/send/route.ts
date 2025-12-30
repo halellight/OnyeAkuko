@@ -68,7 +68,6 @@ function generateDigestEmail(articles: any[], digestTime: string) {
     </div>
   `,
     )
-  Riverside
     .join("")
 
   return `
