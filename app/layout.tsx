@@ -29,6 +29,13 @@ export const metadata: Metadata = {
   ],
   icons: {
     icon: "/favicon.ico",
+    apple: "/Group728.png",
+    other: [
+      {
+        rel: "manifest",
+        url: "/manifest.json",
+      },
+    ],
   },
   creator: "Praise Ibe",
   openGraph: {

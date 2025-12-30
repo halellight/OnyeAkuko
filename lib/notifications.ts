@@ -87,6 +87,7 @@ export function generateDigestEmail(articles: any[], digestTime: string) {
   <div style="max-width: 600px; margin: 0 auto; background: #ffffff;">
     <!-- Header -->
     <div style="padding: 40px 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
+      <img src="https://onyeakuko.online/Group728.png" alt="OnyeAkuko Logo" style="width: 80px; height: 80px; margin-bottom: 20px; border-radius: 50%;">
       <h1 style="margin: 0; color: #000000; font-size: 32px; font-weight: 800; letter-spacing: -0.05em; text-transform: uppercase;">OnyeAkuko</h1>
       <p style="margin: 8px 0 0 0; color: #666666; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">Intelligence Digest • ${digestTime}</p>
     </div>
