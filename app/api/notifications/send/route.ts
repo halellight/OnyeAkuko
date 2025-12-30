@@ -46,20 +46,29 @@ function generateDigestEmail(articles: any[], digestTime: string) {
     .slice(0, 5)
     .map(
       (article) => `
-    <div style="margin-bottom: 24px; padding: 20px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-      <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-        <span style="background: #e97b3c; color: white; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: bold; text-transform: uppercase;">${article.source}</span>
-        <span style="color: #6b7280; font-size: 12px;">${article.category}</span>
+    <div style="margin-bottom: 32px; padding: 24px; background: #ffffff; border: 1px solid #f2f2f2; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+        <span style="background: #000000; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">${article.source}</span>
+        <span style="color: #888888; font-size: 11px; font-weight: 500; text-transform: uppercase;">• ${article.category}</span>
       </div>
-      <h3 style="margin: 0 0 8px 0; color: #111827; font-size: 18px; line-height: 1.4; font-weight: 700;">${article.title}</h3>
-      <p style="margin: 0 0 16px 0; color: #4b5563; font-size: 14px; line-height: 1.6;">${article.description}</p>
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-         <a href="${article.link}" style="display: inline-block; padding: 8px 16px; background: #111827; color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 12px; font-weight: 600;">Read More →</a>
-         <span style="color: #9ca3af; font-size: 12px;">Credibility: ${Math.round(article.credibility * 100)}%</span>
+      <h3 style="margin: 0 0 16px 0; color: #000000; font-size: 22px; line-height: 1.3; font-weight: 800; letter-spacing: -0.02em;">${article.title}</h3>
+      
+      <div style="margin: 0 0 24px 0; padding: 16px; background: #fafafa; border-radius: 12px;">
+        <p style="margin: 0 0 8px 0; color: #666666; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8;">Intelligence Summary</p>
+        <p style="margin: 0; color: #333333; font-size: 15px; line-height: 1.6; font-weight: 400;">${article.description}</p>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f5f5f5; padding-top: 20px;">
+         <a href="${article.link}" style="display: inline-block; padding: 12px 24px; background: #000000; color: #ffffff; text-decoration: none; border-radius: 12px; font-size: 13px; font-weight: 700;">Read Full Insight →</a>
+         <div style="text-align: right;">
+           <span style="display: block; color: #999999; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Credibility Index</span>
+           <span style="color: #000000; font-size: 15px; font-weight: 800;">${Math.round(article.credibility * 100)}%</span>
+         </div>
       </div>
     </div>
   `,
     )
+  Riverside
     .join("")
 
   return `
