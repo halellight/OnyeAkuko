@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       digestTime = forceTime
     } else if (currentHour === 9) {
       digestTime = "Morning"
-    } else if (currentHour === 15) {
+    } else if (currentHour === 17) { // Evening digest (5 PM UTC = 6 PM Local)
       digestTime = "Evening"
     }
 
