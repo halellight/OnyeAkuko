@@ -37,7 +37,7 @@ export default function Dashboard() {
           sentiment: selectedSentiment,
           timeRange: timeRange
         })
-        const response = await fetch(`/api/news?${params.toString()}`, {
+        const response = await fetch(`/api/news?${params.toString()}&_t=${Date.now()}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" }
         })

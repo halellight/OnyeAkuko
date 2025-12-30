@@ -4,11 +4,5 @@
             "path": "/api/cron/send-digests",
             "schedule": "0 9 * * *"
         }
-    ],
-    "rewrites": [
-        {
-            "source": "/api/news",
-            "destination": "/api/fetch-news"
-        }
     ]
 }
