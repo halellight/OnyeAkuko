@@ -122,12 +122,21 @@ export async function GET(request: NextRequest) {
       }))
       .filter((article, index, self) => self.findIndex((a) => a.title === article.title) === index)
 
-    // Time Filtering (Resilient 36h window)
+    // Time Filtering (Adaptive window: 36h -> 48h if < 20 articles)
     const now = new Date()
     let filtered = articles
+
     if (timeRange === "today") {
       const thirtySixHoursAgo = now.getTime() - (36 * 60 * 60 * 1000)
-      filtered = articles.filter(a => new Date(a.date).getTime() >= thirtySixHoursAgo)
+      const primaryFiltered = articles.filter(a => new Date(a.date).getTime() >= thirtySixHoursAgo)
+
+      if (primaryFiltered.length < 20) {
+        console.log(`[news-api] Only ${primaryFiltered.length} articles in 36h. Expanding to 48h.`)
+        const fortyEightHoursAgo = now.getTime() - (48 * 60 * 60 * 1000)
+        filtered = articles.filter(a => new Date(a.date).getTime() >= fortyEightHoursAgo)
+      } else {
+        filtered = primaryFiltered
+      }
     }
 
     if (sentiment !== "all") filtered = filtered.filter(a => a.sentiment === sentiment)
