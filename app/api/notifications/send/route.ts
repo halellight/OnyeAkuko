@@ -47,6 +47,11 @@ function generateDigestEmail(articles: any[], digestTime: string) {
     .map(
       (article) => `
     <div style="margin-bottom: 32px; padding: 24px; background: #ffffff; border: 1px solid #f2f2f2; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+      ${article.imageUrl ? `
+      <div style="margin-bottom: 20px; border-radius: 12px; overflow: hidden; background: #f5f5f5;">
+        <img src="${article.imageUrl}" alt="${article.title}" style="width: 100%; height: auto; display: block; max-height: 240px; object-fit: cover;">
+      </div>
+      ` : ''}
       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
         <span style="background: #000000; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">${article.source}</span>
         <span style="color: #888888; font-size: 11px; font-weight: 500; text-transform: uppercase;">• ${article.category}</span>

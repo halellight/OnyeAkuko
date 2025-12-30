@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getNews } from "@/lib/news"
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,18 +34,8 @@ export async function GET(request: NextRequest) {
 
     console.log(`[Cron] Triggering ${digestTime} digest...`)
 
-    // Fetch latest articles
-    const origin = request.nextUrl.origin
-    const articlesResponse = await fetch(`${origin}/api/news?region=nigeria&timeRange=today`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    })
-
-    if (!articlesResponse.ok) {
-      throw new Error(`Failed to fetch articles: ${articlesResponse.statusText}`)
-    }
-
-    const articles = await articlesResponse.json()
+    // Fetch latest articles DIRECTLY via lib (skips network/auth issues)
+    const articles = await getNews({ region: "nigeria", timeRange: "today" })
     const digestArticles = articles.slice(0, 5)
 
     // Trigger the send route

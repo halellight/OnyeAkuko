@@ -14,36 +14,36 @@ const nigerianSources = [
     name: "Daily Trust",
     url: "https://www.dailytrust.com.ng",
     selectors: {
-      article: "article.post-item",
-      title: "h3 a, h2 a",
-      description: ".post-excerpt, p",
+      article: "article.post-item, .jeg_post",
+      title: "h3 a, h2 a, .jeg_post_title a",
+      description: ".post-excerpt, p, .jeg_post_excerpt p",
       link: "a",
-      date: ".post-date, time",
-      image: "img",
+      date: ".post-date, time, .jeg_meta_date",
+      image: "img, .jeg_thumb img",
     },
   },
   {
     name: "Punch Nigeria",
     url: "https://punchng.com",
     selectors: {
-      article: "article, .post",
-      title: "h2 a, h3 a",
-      description: ".excerpt, p",
+      article: "article, .post-item-list",
+      title: "h2 a, h3 a, .post-title a",
+      description: ".excerpt, p, .post-excerpt",
       link: "a",
-      date: ".date, time",
-      image: "img",
+      date: ".date, time, .post-date",
+      image: "img, .post-image img",
     },
   },
   {
     name: "ThisDay",
     url: "https://www.thisdaylive.com",
     selectors: {
-      article: "article, .story-item",
-      title: "h2, h3",
-      description: ".story-text, p",
+      article: "article, .td-module-container",
+      title: "h2, h3, .entry-title a",
+      description: ".story-text, p, .td-excerpt",
       link: "a",
-      date: ".story-date, time",
-      image: "img",
+      date: ".story-date, time, .td-post-date",
+      image: "img, .entry-thumb",
     },
   },
   {
@@ -51,35 +51,35 @@ const nigerianSources = [
     url: "https://techcabal.com",
     selectors: {
       article: "article, .article-card",
-      title: "h2 a, h1 a",
-      description: ".article-excerpt, p",
+      title: "h2 a, h1 a, .entry-title a",
+      description: ".article-excerpt, p, .entry-content p",
       link: "a",
       date: ".publish-date, time",
-      image: ".article-image img, img",
+      image: ".article-image img, img, .attachment-medium",
     },
   },
   {
     name: "The Cable",
     url: "https://www.thecable.ng",
     selectors: {
-      article: "article, .story",
-      title: "h2 a, h3 a",
-      description: ".story-summary, p",
+      article: "article, .story, .td_module_10",
+      title: "h2 a, h3 a, .entry-title a",
+      description: ".story-summary, p, .td-excerpt",
       link: "a",
-      date: ".story-time, time",
-      image: ".story-image img, img",
+      date: ".story-time, time, .td-post-date",
+      image: ".story-image img, img, .entry-thumb",
     },
   },
   {
     name: "Vanguard Nigeria",
     url: "https://www.vanguardngr.com",
     selectors: {
-      article: "article, .story-item",
-      title: "h2 a, h3 a",
-      description: ".story-text, p",
+      article: "article, .rt-news-box-item",
+      title: "h2 a, h3 a, .entry-title a",
+      description: ".story-text, p, .rt-news-box-content p",
       link: "a",
       date: ".time, time",
-      image: "img",
+      image: "img, .rt-news-box-img img",
     },
   },
 ]
@@ -129,9 +129,29 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
                 }
               }
 
-              let imageUrl = imageEl?.attr("src") || imageEl?.attr("data-src") || undefined
+              // Enhanced Image Extraction (src, data-src, srcset)
+              let imageUrl = undefined
+              if (imageEl) {
+                imageUrl = imageEl.attr("src") || imageEl.attr("data-src") || imageEl.attr("data-original")
+
+                // Handle srcset if needed (take the first URL)
+                if (!imageUrl && imageEl.attr("srcset")) {
+                  const srcset = imageEl.attr("srcset") || ""
+                  imageUrl = srcset.split(",")[0].trim().split(" ")[0]
+                }
+              }
+
               if (imageUrl && !imageUrl.startsWith("http")) {
-                imageUrl = new URL(imageUrl, source.url).toString()
+                // Check if it's a protocol-relative URL
+                if (imageUrl.startsWith("//")) {
+                  imageUrl = "https:" + imageUrl
+                } else {
+                  try {
+                    imageUrl = new URL(imageUrl, source.url).toString()
+                  } catch (e) {
+                    imageUrl = undefined
+                  }
+                }
               }
 
               if (title.length > 10) {
@@ -145,6 +165,7 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
                 })
               }
             }
+
           } catch (e) {
             // Skip individual article errors
           }
