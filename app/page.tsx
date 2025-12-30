@@ -37,10 +37,11 @@ export default function Dashboard() {
           sentiment: selectedSentiment,
           timeRange: timeRange
         })
-        const response = await fetch(`/api/fetch-news?${params.toString()}`, {
+        const response = await fetch(`/api/news?${params.toString()}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" }
         })
+        Riverside
         const data = await response.json()
 
         if (Array.isArray(data)) {
