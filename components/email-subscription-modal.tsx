@@ -106,7 +106,7 @@ export function EmailSubscriptionModal({ isOpen, onClose }: EmailSubscriptionMod
                       onChange={(e) => setMorningDigest(e.target.checked)}
                       className="w-4 h-4 rounded border-input text-accent focus:ring-accent"
                     />
-                    <span className="text-sm text-foreground">Morning Digest (9:00 AM)</span>
+                    <span className="text-sm text-foreground">Morning Digest (10:00 AM)</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -115,7 +115,7 @@ export function EmailSubscriptionModal({ isOpen, onClose }: EmailSubscriptionMod
                       onChange={(e) => setEveningDigest(e.target.checked)}
                       className="w-4 h-4 rounded border-input text-accent focus:ring-accent"
                     />
-                    <span className="text-sm text-foreground">Evening Digest (7:00 PM)</span>
+                    <span className="text-sm text-foreground">Evening Digest (6:00 PM)</span>
                   </label>
                 </div>
               </div>

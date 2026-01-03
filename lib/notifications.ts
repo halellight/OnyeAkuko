@@ -1,58 +1,65 @@
 import { supabaseAdmin } from "./supabase"
 
 export async function sendEmailViaMailtrap(to: string, subject: string, htmlBody: string) {
-    const MAILTRAP_API_KEY = process.env.MAILTRAP_API_KEY
+  const MAILTRAP_API_KEY = process.env.MAILTRAP_API_KEY
 
-    if (!MAILTRAP_API_KEY) {
-        console.error("[Mailtrap] Configuration not complete: MAILTRAP_API_KEY missing")
-        return false
+  if (!MAILTRAP_API_KEY) {
+    console.error("[Mailtrap] Configuration not complete: MAILTRAP_API_KEY missing")
+    return false
+  }
+
+  try {
+    const response = await fetch("https://send.api.mailtrap.io/api/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${MAILTRAP_API_KEY}`,
+      },
+      body: JSON.stringify({
+        to: [{ email: to }],
+        from: { email: "news@onyeakuko.online", name: "OnyeAkuko" },
+        subject,
+        html: htmlBody,
+        category: "News Digest"
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      console.error("[Mailtrap] Send failed:", error)
+      return false
     }
 
-    try {
-        const response = await fetch("https://send.api.mailtrap.io/api/send", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${MAILTRAP_API_KEY}`,
-            },
-            body: JSON.stringify({
-                to: [{ email: to }],
-                from: { email: "news@onyeakuko.online", name: "OnyeAkuko" },
-                subject,
-                html: htmlBody,
-                category: "News Digest"
-            }),
-        })
-
-        if (!response.ok) {
-            const error = await response.text()
-            console.error("[Mailtrap] Send failed:", error)
-            return false
-        }
-
-        console.log(`[Mailtrap] Email sent successfully to ${to}`)
-        return true
-    } catch (error) {
-        console.error("[Mailtrap] Error:", error)
-        return false
-    }
+    console.log(`[Mailtrap] Email sent successfully to ${to}`)
+    return true
+  } catch (error) {
+    console.error("[Mailtrap] Error:", error)
+    return false
+  }
 }
 
 export function generateDigestEmail(articles: any[], digestTime: string) {
-    const articlesHtml = articles
-        .slice(0, 5)
-        .map(
-            (article) => `
-    <div style="margin-bottom: 32px; padding: 24px; background: #ffffff; border: 1px solid #f2f2f2; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+  const articlesHtml = articles
+    .slice(0, 5)
+    .map(
+      (article) => `
+    <div style="margin-bottom: 32px; padding: 24px 24px 32px 24px; background: #ffffff; border: 1px solid #f2f2f2; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
       ${article.imageUrl ? `
       <div style="margin-bottom: 20px; border-radius: 12px; overflow: hidden; background: #f5f5f5;">
         <img src="${article.imageUrl}" alt="${article.title}" style="width: 100%; height: auto; display: block; max-height: 240px; object-fit: cover;">
       </div>
       ` : ''}
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-        <span style="background: #000000; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">${article.source}</span>
-        <span style="color: #888888; font-size: 11px; font-weight: 500; text-transform: uppercase;">• ${article.category}</span>
-      </div>
+      
+      <!-- Metadata Row -->
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 16px;">
+        <tr>
+          <td align="left">
+            <span style="background: #000000; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block;">${article.source}</span>
+            <span style="color: #888888; font-size: 11px; font-weight: 500; text-transform: uppercase; margin-left: 8px;">• ${article.category}</span>
+          </td>
+        </tr>
+      </table>
+
       <h3 style="margin: 0 0 16px 0; color: #000000; font-size: 22px; line-height: 1.3; font-weight: 800; letter-spacing: -0.02em;">${article.title}</h3>
       
       <div style="margin: 0 0 24px 0; padding: 16px; background: #fafafa; border-radius: 12px;">
@@ -60,19 +67,24 @@ export function generateDigestEmail(articles: any[], digestTime: string) {
         <p style="margin: 0; color: #333333; font-size: 15px; line-height: 1.6; font-weight: 400;">${article.description}</p>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f5f5f5; padding-top: 20px;">
-         <a href="${article.link}" style="display: inline-block; padding: 12px 24px; background: #000000; color: #ffffff; text-decoration: none; border-radius: 12px; font-size: 13px; font-weight: 700;">Read Full Insight →</a>
-         <div style="text-align: right;">
-           <span style="display: block; color: #999999; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Credibility Index</span>
-           <span style="color: #000000; font-size: 15px; font-weight: 800;">${Math.round(article.credibility * 100)}%</span>
-         </div>
-      </div>
+      <!-- Action Row -->
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px solid #f5f5f5; padding-top: 20px;">
+        <tr>
+          <td align="left" valign="middle">
+            <a href="${article.link}" style="display: inline-block; padding: 12px 24px; background: #000000; color: #ffffff; text-decoration: none; border-radius: 12px; font-size: 13px; font-weight: 700;">Read Full Insight →</a>
+          </td>
+          <td align="right" valign="middle">
+            <span style="display: block; color: #999999; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Credibility Index</span>
+            <span style="color: #000000; font-size: 15px; font-weight: 800;">${Math.round(article.credibility * 100)}%</span>
+          </td>
+        </tr>
+      </table>
     </div>
   `,
-        )
-        .join("")
+    )
+    .join("")
 
-    return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -123,33 +135,33 @@ export function generateDigestEmail(articles: any[], digestTime: string) {
 }
 
 export async function processDigestSending(options: { subscribers?: string[], articles: any[], digestTime: string }) {
-    let { subscribers, articles, digestTime } = options
+  let { subscribers, articles, digestTime } = options
 
-    if (!subscribers || subscribers.length === 0) {
-        const column = digestTime?.toLowerCase().includes("morning") ? "morning_digest" : "evening_digest"
-        const { data, error } = await supabaseAdmin
-            .from('subscriptions')
-            .select('email')
-            .eq(column, true)
+  if (!subscribers || subscribers.length === 0) {
+    const column = digestTime?.toLowerCase().includes("morning") ? "morning_digest" : "evening_digest"
+    const { data, error } = await supabaseAdmin
+      .from('subscriptions')
+      .select('email')
+      .eq(column, true)
 
-        if (error) {
-            console.error("[Supabase] Failed to fetch subscribers:", error)
-            throw new Error("Failed to fetch subscribers")
-        }
-        subscribers = data.map(s => s.email)
+    if (error) {
+      console.error("[Supabase] Failed to fetch subscribers:", error)
+      throw new Error("Failed to fetch subscribers")
     }
+    subscribers = data.map(s => s.email)
+  }
 
-    if (!subscribers || subscribers.length === 0) {
-        return { successful: 0, failed: 0, total: 0, message: "No subscribers found" }
-    }
+  if (!subscribers || subscribers.length === 0) {
+    return { successful: 0, failed: 0, total: 0, message: "No subscribers found" }
+  }
 
-    const subject = `📰 Your ${digestTime} Digest | OnyeAkuko`
-    const htmlBody = generateDigestEmail(articles, digestTime)
+  const subject = `📰 Your ${digestTime} Digest | OnyeAkuko`
+  const htmlBody = generateDigestEmail(articles, digestTime)
 
-    const results = await Promise.allSettled(subscribers.map((email: string) => sendEmailViaMailtrap(email, subject, htmlBody)))
+  const results = await Promise.allSettled(subscribers.map((email: string) => sendEmailViaMailtrap(email, subject, htmlBody)))
 
-    const successful = results.filter((r) => r.status === "fulfilled" && r.value === true).length
-    const failed = results.length - successful
+  const successful = results.filter((r) => r.status === "fulfilled" && r.value === true).length
+  const failed = results.length - successful
 
-    return { successful, failed, total: results.length }
+  return { successful, failed, total: results.length }
 }

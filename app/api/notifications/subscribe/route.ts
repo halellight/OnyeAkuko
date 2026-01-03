@@ -23,7 +23,7 @@ async function sendWelcomeEmail(to: string) {
         <ul style="margin: 0; padding: 0; list-style: none; color: #222; font-size: 14px;">
           <li style="margin-bottom: 8px;">• Curated Nigerian & Global News Intelligence</li>
           <li style="margin-bottom: 8px;">• Sentiment Analysis & Credibility Ratings</li>
-          <li>• Twice Daily Briefings (9 AM / 7 PM UTC)</li>
+          <li>• Twice Daily Briefings (10 AM / 6 PM WAT)</li>
         </ul>
       </div>
       <p style="color: #888; font-size: 12px; font-style: italic;">
