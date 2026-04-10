@@ -6,18 +6,18 @@ import { Toaster } from "sonner"
 import "./globals.css"
 import { NewsletterModal } from "@/components/newsletter-modal"
 
-const merriweather = Merriweather({ 
-  weight: ["300", "400", "700", "900"], 
-  subsets: ["latin"], 
+const merriweather = Merriweather({
+  weight: ["300", "400", "700", "900"],
+  subsets: ["latin"],
   variable: "--font-merriweather",
-  display: "swap" 
+  display: "swap"
 })
 
-const anton = Anton({ 
+const anton = Anton({
   weight: "400",
-  subsets: ["latin"], 
+  subsets: ["latin"],
   variable: "--font-anton",
-  display: "swap" 
+  display: "swap"
 })
 
 export const metadata: Metadata = {
@@ -32,11 +32,22 @@ export const metadata: Metadata = {
     "news",
     "share opinions",
     "Nigerian politics",
+    "News",
+    "OnyeAkuko",
+    "Nigerian News",
+    "World News",
+    "Business News",
+    "Technology News",
+    "Culture News",
+    "Science News",
+    "Politics News",
+    "Nigeria"
+
   ],
   authors: [
     {
       name: "Praise Ibe",
-      url: "https://oneyeakuko.online",
+      url: "https://onyeakuko.online",
     },
   ],
   icons: {
@@ -53,7 +64,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "OnyeAkuko - Your AI-Powered News Curator",
     description: "Stay informed with curated news from credible sources across all major categories",
-    url: "https://oneyeakuko.online",
+    url: "https://onyeakuko.online",
     siteName: "OnyeAkuko",
     images: [
       {
@@ -84,7 +95,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  metadataBase: new URL("https://oneyeakuko.online"),
+  metadataBase: new URL("https://onyeakuko.online"),
 }
 
 export default function RootLayout({
