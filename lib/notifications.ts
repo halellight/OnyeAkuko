@@ -38,17 +38,15 @@ export async function sendEmailViaMailtrap(to: string, subject: string, htmlBody
   }
 }
 
-export function generateDigestEmail(articles: any[], digestTime: string) {
+export function generateDigestEmail(articles: any[], digestTime: string, editorialNote?: string) {
   const articlesHtml = articles
     .slice(0, 5)
     .map(
       (article) => `
     <div style="margin-bottom: 32px; padding: 24px 24px 32px 24px; background: #ffffff; border: 1px solid #f2f2f2; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-      ${article.imageUrl ? `
       <div style="margin-bottom: 20px; border-radius: 12px; overflow: hidden; background: #f5f5f5;">
-        <img src="${article.imageUrl}" alt="${article.title}" style="width: 100%; height: auto; display: block; max-height: 240px; object-fit: cover;">
+        <img src="${(article.imageUrl && article.imageUrl !== 'N/A' && !article.imageUrl.includes('default.jpg')) ? article.imageUrl : 'https://onyeakuko.online/Group728.png'}" alt="${article.title}" style="width: 100%; height: auto; display: block; max-height: 240px; object-fit: cover;">
       </div>
-      ` : ''}
       
       <!-- Metadata Row -->
       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 16px;">
@@ -101,13 +99,16 @@ export function generateDigestEmail(articles: any[], digestTime: string) {
     <div style="padding: 40px 20px; text-align: center; border-bottom: 1px solid #f0f0f0;">
       <img src="https://onyeakuko.online/Group728.png" alt="OnyeAkuko Logo" style="width: 80px; height: 80px; margin-bottom: 20px; border-radius: 50%;">
       <h1 style="margin: 0; color: #000000; font-size: 32px; font-weight: 800; letter-spacing: -0.05em; text-transform: uppercase;">OnyeAkuko</h1>
-      <p style="margin: 8px 0 0 0; color: #666666; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">Intelligence Digest • ${digestTime}</p>
+      <p style="margin: 8px 0 0 0; color: #666666; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">Naija Digest • ${digestTime}</p>
     </div>
     
     <!-- Hero Article/Notice -->
     <div style="padding: 30px 20px; background: #000000; color: #ffffff; text-align: center;">
-      <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.8;">Today's Focus</p>
-      <h2 style="margin: 10px 0 0 0; font-size: 24px; font-weight: 700; line-height: 1.3;">Curated Intelligence for the Modern Nigerian Observer</h2>
+      <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.8;">${editorialNote ? "Editor's Special Address" : "Today's Focus"}</p>
+      ${editorialNote
+      ? `<div style="margin: 16px 0 0 0; font-size: 16px; font-weight: 400; line-height: 1.6; color: #f5f5f5; text-align: left;"><p>${editorialNote.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p></div>`
+      : `<h2 style="margin: 10px 0 0 0; font-size: 24px; font-weight: 700; line-height: 1.3;">Curated Intelligence for the Modern Nigerian Observer</h2>`
+    }
     </div>
 
     <!-- Articles List -->
@@ -134,8 +135,8 @@ export function generateDigestEmail(articles: any[], digestTime: string) {
   `
 }
 
-export async function processDigestSending(options: { subscribers?: string[], articles: any[], digestTime: string }) {
-  let { subscribers, articles, digestTime } = options
+export async function processDigestSending(options: { subscribers?: string[], articles: any[], digestTime: string, editorialNote?: string }) {
+  let { subscribers, articles, digestTime, editorialNote } = options
 
   if (!subscribers || subscribers.length === 0) {
     const column = digestTime?.toLowerCase().includes("morning") ? "morning_digest" : "evening_digest"
@@ -156,7 +157,7 @@ export async function processDigestSending(options: { subscribers?: string[], ar
   }
 
   const subject = `📰 Your ${digestTime} Digest | OnyeAkuko`
-  const htmlBody = generateDigestEmail(articles, digestTime)
+  const htmlBody = generateDigestEmail(articles, digestTime, editorialNote)
 
   const results = await Promise.allSettled(subscribers.map((email: string) => sendEmailViaMailtrap(email, subject, htmlBody)))
 

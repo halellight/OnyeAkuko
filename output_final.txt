@@ -1,0 +1,28 @@
+Starting Easter blast script...
+[scraper] Error for ThisDay: fetch failed
+[scraper] Error for Vanguard Nigeria: fetch failed
+[scraper] Error for Information Nigeria: fetch failed
+[scraper] Error for The Cable: fetch failed
+[scraper] Error for TechCabal: fetch failed
+[scraper] Scraped 89 articles from Punch Nigeria
+[scraper] Scraped 0 articles from Daily Trust
+Found 30 articles from scraper.
+Sending special Easter address email blast to all Evening subscribers...
+[Mailtrap] Email sent successfully to damastohcute@gmail.com
+[Mailtrap] Email sent successfully to oluwasolaoluwadamilola17@gmail.com
+[Mailtrap] Email sent successfully to preyeugbomah@gmail.com
+[Mailtrap] Email sent successfully to praiseibec@gmail.com
+[Mailtrap] Email sent successfully to rewardenikuomehin@gmail.com
+[Mailtrap] Email sent successfully to neneibe@yahoo.com
+[Mailtrap] Email sent successfully to ayomigeige2020@gmail.com
+[Mailtrap] Email sent successfully to fiyinfoluwasamuel580@gmail.com
+[Mailtrap] Email sent successfully to ezehdavidhoddy@gmail.com
+[Mailtrap] Email sent successfully to okoyemdelphine@gmail.com
+[Mailtrap] Email sent successfully to ibengwoke@yahoo.com
+[Mailtrap] Email sent successfully to taiwoariyo123@gmail.com
+[Mailtrap] Email sent successfully to antonidiata@gmail.com
+[Mailtrap] Email sent successfully to thatdenzguy@gmail.com
+[Mailtrap] Email sent successfully to harunaonize69@gmail.com
+[Mailtrap] Email sent successfully to somachiiben@gmail.com
+[Mailtrap] Email sent successfully to johnsonaliyu47@gmail.com
+Blast result: { successful: 17, failed: 0, total: 17 }

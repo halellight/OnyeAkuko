@@ -62,7 +62,7 @@ export const fallbackArticles = [
         sentiment: "positive",
         region: "nigeria",
         date: new Date().toISOString(),
-        imageUrl: "/nigerian-tech-startup.jpg",
+        imageUrl: "/Group728.png",
         link: "https://techcabal.com",
         credibility: 0.9,
     }
@@ -128,7 +128,7 @@ export async function getNews(options: NewsOptions = {}) {
                 // Use pre-tagged region if available, otherwise detect
                 region: article.region || detectRegion(mappedTitle, mappedDesc),
                 date: article.published_at || article.date || new Date().toISOString(),
-                imageUrl: article.image || article.imageUrl || "/nigerian-tech-startup.jpg",
+                imageUrl: article.image || article.imageUrl || "/Group728.png",
                 link: article.url || article.link || "#",
                 credibility: 0.85,
             }

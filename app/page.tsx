@@ -71,8 +71,16 @@ export default function Dashboard() {
 
   return (
     <main className="min-h-screen bg-background">
-      <NewsHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <NewsHeader selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
+
+      {/* Massive Header Section */}
+      <div className="w-full flex justify-center items-center py-8 sm:py-12 border-b border-[#222] bg-[#0a0a0a]">
+        <h1 className="text-7xl sm:text-9xl md:text-[160px] font-display text-white uppercase tracking-wider leading-[0.8] text-center w-full max-w-[1400px] px-4">
+          ONYEAKỤKỌ
+        </h1>
+      </div>
+
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <NewsFilters
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
