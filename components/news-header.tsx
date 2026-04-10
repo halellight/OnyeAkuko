@@ -57,10 +57,10 @@ export function NewsHeader({ selectedCategory = "all", setSelectedCategory = () 
                 document.dispatchEvent(new Event('open-newsletter'))
               }}
               title="Subscribe"
-              className="text-white hover:text-[#e59c6a] transition-colors p-1"
+              className="text-[#e59c6a] transition-colors p-1"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM22.539 12.086H1.46v9.844L12 17.55l10.539 4.38v-9.844zM1.46 1.562h21.08v2.836H1.46V1.562z"/>
+                <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM22.539 12.086H1.46v9.844L12 17.55l10.539 4.38v-9.844zM1.46 1.562h21.08v2.836H1.46V1.562z" />
               </svg>
             </button>
           </div>
