@@ -24,6 +24,18 @@ export function NewsletterModal() {
     }
   }, [])
 
+  // Auto-show for new visitors after a short delay
+  useEffect(() => {
+    const hasSeenModal = localStorage.getItem("hasSeenNewsletterModal")
+    if (!hasSeenModal) {
+      const timer = setTimeout(() => {
+        setIsOpen(true)
+        localStorage.setItem("hasSeenNewsletterModal", "true")
+      }, 5000) // 5 seconds delay before showing
+      return () => clearTimeout(timer)
+    }
+  }, [])
+
   const onClose = () => setIsOpen(false)
 
   const handleSubscribe = async (e: React.FormEvent) => {
