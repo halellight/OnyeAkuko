@@ -70,8 +70,8 @@ export function NewsletterModal() {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="relative w-full sm:max-w-2xl bg-[#f5f5f5] text-black shadow-2xl p-8 sm:p-12 animate-in slide-in-from-bottom-2 duration-300 overflow-y-auto max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-700">
+      <div className="relative w-full sm:max-w-2xl bg-[#f5f5f5] text-black shadow-2xl p-8 sm:p-12 animate-in slide-in-from-bottom-2 duration-700 overflow-y-auto max-h-[90vh]">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-full hover:bg-black/5 transition-colors"
@@ -154,10 +154,10 @@ export function NewsletterModal() {
 
           {/* Featured Quote Component */}
           <div className="mt-8 pt-8 border-t border-[#d1d1d1] flex items-start gap-4">
-            <img src="/favicon.ico" alt="Avatar" className="w-12 h-12 rounded-full border border-[#cccccc] bg-white object-contain" />
+            <img src="/favicon.ico" alt="Avatar" className="w-12 h-12 rounded-full border border-[#cccccc] bg-black object-contain" />
             <div className="flex flex-col">
               <p className="text-lg font-serif italic text-black mb-1 leading-snug">"OnyeAkụkọ. Intelligence Unfiltered. Daily."</p>
-              <p className="text-sm font-bold text-black">— Editorial Deck</p>
+              <p className="text-sm font-bold text-black">— By Praise Ibe</p>
             </div>
           </div>
 
