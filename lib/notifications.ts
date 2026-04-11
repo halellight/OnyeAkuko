@@ -52,7 +52,7 @@ export function generateDigestEmail(articles: any[], digestTime: string, editori
       </div>
 
       <div style="margin-bottom: 20px; overflow: hidden; background: #f5f5f5; border: 1px solid #e0e0e0;">
-        <img src="${(article.imageUrl && article.imageUrl !== 'N/A' && !article.imageUrl.includes('default.jpg')) ? article.imageUrl : 'https://onyeakuko.online/Group728.png'}" alt="${article.title}" style="width: 100%; height: auto; display: block; max-height: 280px; object-fit: cover; filter: grayscale(20%);">
+        <img src="${(article.imageUrl && article.imageUrl !== 'N/A' && article.imageUrl.startsWith('http') && !article.imageUrl.includes('default.jpg')) ? article.imageUrl : 'https://onyeakuko.online/Group728.png'}" alt="${article.title}" style="width: 100%; height: auto; display: block; max-height: 280px; object-fit: cover; filter: grayscale(20%);">
       </div>
       
       <div style="margin: 0 0 24px 0;">
@@ -85,12 +85,10 @@ export function generateDigestEmail(articles: any[], digestTime: string, editori
   </style>
 </head>
 <body style="margin: 0; padding: 0; background: #f4f4f4; color: #111111;">
-  <div style="max-width: 640px; margin: 0 auto; background: #ffffff; border-left: 1px solid #e5e5e5; border-right: 1px solid #e5e5e5;">
+  <div style="max-width: 640px; margin: 0 auto; background: #ffffff;">
     
-    // <!-- Top Bar -->
-    // <div style="background: #000000; padding: 8px 24px; text-align: center;">
-    //   <p style="margin: 0; color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; font-family: 'Satoshi', sans-serif;">THE BRIEF</p>
-    // </div>
+    
+
 
     <!-- Header -->
     <div style="padding: 48px 32px 32px 32px; text-align: center; background: #ffffff;">
