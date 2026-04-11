@@ -78,6 +78,7 @@ export function generateDigestEmail(articles: any[], digestTime: string, editori
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
   <style>
     @import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
@@ -104,7 +105,7 @@ export function generateDigestEmail(articles: any[], digestTime: string, editori
       </table>
       
       <!-- App Name in Anton -->
-      <h1 style="margin: 0 0 16px 0; color: #000000; font-size: 46px; text-transform: uppercase; letter-spacing: 0.02em; font-family: 'Anton', 'Satoshi', sans-serif; font-weight: normal; line-height: 1;">ONYEAKỤKỌ</h1>
+      <h1 style="margin: 0 0 16px 0; color: #000000; font-size: 46px; text-transform: uppercase; letter-spacing: 0.02em; font-family: 'Anton', Impact, 'Arial Black', Arial, sans-serif; font-weight: 900; line-height: 1;">ONYEAKỤKỌ</h1>
       
       <!-- Digest Subtitle -->
       <p style="margin: 0; color: #666666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 700; font-family: 'Satoshi', sans-serif;">INTELLIGENCE DIGEST • ${digestTime.toUpperCase()}</p>
