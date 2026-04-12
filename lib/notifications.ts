@@ -51,7 +51,7 @@ export function generateDigestEmail(articles: any[], digestTime: string, editori
         <span style="color: #999999; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-left: 8px; font-family: 'Satoshi', sans-serif;">• ${article.category}</span>
       </div>
 
-      <div style="margin-bottom: 20px; overflow: hidden; background: #f5f5f5; border: 1px solid #e0e0e0;">
+      <div style="margin-bottom: 20px; overflow: hidden; background: #f5f5f5;">
         <img src="${(article.imageUrl && article.imageUrl !== 'N/A' && article.imageUrl.startsWith('http') && !article.imageUrl.includes('default.jpg')) ? article.imageUrl : 'https://onyeakuko.online/Group728.png'}" alt="${article.title}" style="width: 100%; height: auto; display: block; max-height: 280px; object-fit: cover; filter: grayscale(20%);">
       </div>
       
@@ -87,10 +87,7 @@ export function generateDigestEmail(articles: any[], digestTime: string, editori
 </head>
 <body style="margin: 0; padding: 0; background: #f4f4f4; color: #111111;">
   <div style="max-width: 640px; margin: 0 auto; background: #ffffff;">
-    
-    
-
-
+   
     <!-- Header -->
     <div style="padding: 48px 32px 32px 32px; text-align: center; background: #ffffff;">
       <!-- Logo Circle -->
