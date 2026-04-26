@@ -1,0 +1,326 @@
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+import { useParams, useRouter } from "next/navigation"
+import Link from "next/link"
+import { ArrowLeft, ExternalLink, Share2, Clock, Sparkles, Loader2, ChevronRight } from "lucide-react"
+
+interface Article {
+  id: string
+  title: string
+  description: string
+  source: string
+  category: string
+  sentiment: "positive" | "neutral" | "negative"
+  region: "global" | "africa" | "nigeria"
+  date: string
+  imageUrl: string
+  link: string
+  credibility: number
+}
+
+function slugify(title: string) {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .slice(0, 80)
+}
+
+const SENTIMENT_STYLES = {
+  positive: "text-[#4ade80] bg-[#4ade80]/10 border-[#4ade80]/30",
+  negative: "text-[#f87171] bg-[#f87171]/10 border-[#f87171]/30",
+  neutral: "text-[#94a3b8] bg-[#94a3b8]/10 border-[#94a3b8]/30",
+}
+
+export default function ArticlePage() {
+  const params = useParams()
+  const router = useRouter()
+  const slug = decodeURIComponent((params?.id as string) || "")
+
+  const [article, setArticle] = useState<Article | null>(null)
+  const [relatedArticles, setRelatedArticles] = useState<Article[]>([])
+  const [summary, setSummary] = useState<string>("")
+  const [isAI, setIsAI] = useState(false)
+  const [imageError, setImageError] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [summaryLoading, setSummaryLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/news?_t=${Date.now()}`)
+      const all: Article[] = await res.json()
+
+      const found = Array.isArray(all)
+        ? all.find((a) => slugify(a.title) === slug) || null
+        : null
+
+      setArticle(found)
+
+      if (found && Array.isArray(all)) {
+        const related = all
+          .filter((a) => a.id !== found.id && a.category === found.category)
+          .slice(0, 4)
+        setRelatedArticles(related.length >= 2 ? related : all.filter((a) => a.id !== found.id).slice(0, 4))
+      }
+    } catch (err) {
+      console.error("[ArticlePage] Failed to fetch:", err)
+      setArticle(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [slug])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  // Fetch AI summary once article is loaded
+  useEffect(() => {
+    if (!article) return
+    setSummaryLoading(true)
+
+    fetch("/api/summarize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: article.title, description: article.description }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        setSummary(data.summary || article.description)
+        setIsAI(data.isAI ?? false)
+      })
+      .catch(() => {
+        setSummary(article.description)
+        setIsAI(false)
+      })
+      .finally(() => setSummaryLoading(false))
+  }, [article])
+
+  const handleShare = async () => {
+    const url = window.location.href
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // fallback
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 text-[#e59c6a] animate-spin" />
+      </div>
+    )
+  }
+
+  if (!article) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-4">
+        <p className="text-2xl font-black text-foreground uppercase tracking-tight">Article not found</p>
+        <p className="text-muted-foreground font-serif text-center">This story may have been removed or the link has expired.</p>
+        <Link href="/" className="mt-4 flex items-center gap-2 text-[#e59c6a] font-bold uppercase tracking-widest text-sm hover:underline">
+          <ArrowLeft className="h-4 w-4" /> Back to home
+        </Link>
+      </div>
+    )
+  }
+
+  const formattedDate = new Date(article.date).toLocaleDateString("en-NG", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Minimal top bar */}
+      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border">
+        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-bold uppercase tracking-wider"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Back</span>
+          </button>
+
+          <Link href="/" className="font-display text-base tracking-widest uppercase text-foreground">
+            OnyeAkụkọ
+          </Link>
+
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-bold uppercase tracking-wider"
+          >
+            <Share2 className="h-4 w-4" />
+            <span className="hidden sm:inline">{copied ? "Copied!" : "Share"}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Article Content */}
+      <article className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+
+        {/* Meta */}
+        <div className="flex items-center gap-3 mb-5 flex-wrap">
+          <span className="text-xs font-bold text-[#e59c6a] uppercase tracking-[0.2em]">{article.source}</span>
+          <span className="w-1 h-1 rounded-full bg-border" />
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{article.category}</span>
+          <span className="w-1 h-1 rounded-full bg-border" />
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border ${SENTIMENT_STYLES[article.sentiment]}`}>
+            {article.sentiment}
+          </span>
+        </div>
+
+        {/* Title */}
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground leading-[1.05] tracking-tighter mb-6">
+          {article.title}
+        </h1>
+
+        {/* Date */}
+        <div className="flex items-center gap-2 text-muted-foreground text-xs mb-8">
+          <Clock className="h-3.5 w-3.5" />
+          <span>{formattedDate}</span>
+        </div>
+
+        {/* Hero Image */}
+        <div className="w-full aspect-[16/9] bg-muted overflow-hidden mb-10 border border-border">
+          <img
+            src={(!article.imageUrl || article.imageUrl === "N/A" || imageError) ? "/Group728.png" : article.imageUrl}
+            alt={article.title}
+            onError={() => setImageError(true)}
+            className={`w-full h-full object-cover ${(!article.imageUrl || article.imageUrl === "N/A" || imageError) ? "opacity-50 grayscale object-contain p-12" : ""}`}
+          />
+        </div>
+
+        {/* ─── TL;DR / AI SUMMARY SECTION ─── */}
+        <div className="mb-10">
+          {/* Section badge */}
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="h-4 w-4 text-[#e59c6a]" />
+            <span className="text-xs font-black uppercase tracking-[0.25em] text-[#e59c6a]">
+              TL;DR — Summarized with AI
+            </span>
+            {!isAI && !summaryLoading && (
+              <span className="text-[10px] px-2 py-0.5 border border-border text-muted-foreground uppercase tracking-wider font-bold">
+                Preview
+              </span>
+            )}
+          </div>
+
+          {/* Summary card */}
+          <div className="border border-[#e59c6a]/30 bg-[#e59c6a]/5 p-6">
+            {summaryLoading ? (
+              <div className="flex items-center gap-3 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+                <span className="text-sm font-serif italic">Generating summary...</span>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {summary.split(/\n\n+/).filter(Boolean).map((para, i) => (
+                  <p key={i} className="text-base sm:text-[17px] text-foreground font-serif leading-relaxed">
+                    {para.trim()}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-dashed border-border mb-10" />
+
+        {/* ─── FULL ARTICLE LINK CARD ─── */}
+        <div className="mb-12">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3">
+            Continue reading
+          </p>
+          <a
+            href={article.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-start gap-4 p-5 border border-border hover:border-[#e59c6a]/60 bg-muted/30 hover:bg-[#e59c6a]/5 transition-all duration-300"
+          >
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold text-[#e59c6a] uppercase tracking-widest">{article.source}</span>
+              </div>
+              <p className="text-sm font-bold text-foreground leading-snug line-clamp-2 mb-1 group-hover:text-[#e59c6a] transition-colors tracking-tight">
+                {article.title}
+              </p>
+              <p className="text-xs text-muted-foreground font-serif">Read full article →</p>
+            </div>
+            <div className="flex-shrink-0 pt-1">
+              <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-[#e59c6a] transition-colors" />
+            </div>
+          </a>
+        </div>
+
+        <div className="border-t border-border mb-10" />
+
+        {/* ─── MORE STORIES FOR YOU ─── */}
+        {relatedArticles.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-black text-foreground uppercase tracking-tight">More Stories For You</h2>
+              <Link
+                href="/"
+                className="flex items-center gap-1 text-xs font-bold text-[#e59c6a] uppercase tracking-widest hover:underline"
+              >
+                All Stories <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <div className="flex flex-col divide-y divide-border">
+              {relatedArticles.map((related) => (
+                <RelatedArticleCard key={related.id} article={related} />
+              ))}
+            </div>
+          </section>
+        )}
+      </article>
+    </div>
+  )
+}
+
+function RelatedArticleCard({ article }: { article: Article }) {
+  const [imgError, setImgError] = useState(false)
+  const slug = slugify(article.title)
+
+  return (
+    <Link
+      href={`/article/${encodeURIComponent(slug)}`}
+      className="group flex items-start gap-4 py-5 hover:bg-muted/20 transition-colors -mx-2 px-2"
+    >
+      {/* Thumbnail */}
+      <div className="flex-shrink-0 w-20 h-16 sm:w-24 sm:h-18 bg-muted overflow-hidden border border-border">
+        <img
+          src={(!article.imageUrl || article.imageUrl === "N/A" || imgError) ? "/Group728.png" : article.imageUrl}
+          alt={article.title}
+          onError={() => setImgError(true)}
+          className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${(!article.imageUrl || article.imageUrl === "N/A" || imgError) ? "opacity-40 grayscale object-contain p-3" : ""}`}
+        />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="text-[10px] font-bold text-[#e59c6a] uppercase tracking-[0.2em]">{article.source}</span>
+          <span className="w-1 h-1 rounded-full bg-border" />
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{article.category}</span>
+        </div>
+        <h3 className="text-sm sm:text-base font-black text-foreground leading-snug tracking-tight group-hover:text-[#e59c6a] transition-colors line-clamp-2">
+          {article.title}
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1.5 font-serif line-clamp-1 leading-relaxed">
+          {article.description}
+        </p>
+      </div>
+    </Link>
+  )
+}

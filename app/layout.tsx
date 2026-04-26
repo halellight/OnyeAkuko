@@ -5,6 +5,8 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "sonner"
 import "./globals.css"
 import { NewsletterModal } from "@/components/newsletter-modal"
+import { SettingsPanel } from "@/components/settings-panel"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const merriweather = Merriweather({
   weight: ["300", "400", "700", "900"],
@@ -104,11 +106,19 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${merriweather.variable} ${anton.variable} font-sans antialiased text-[#111]`}>
-        {children}
-        <NewsletterModal />
-        <Toaster theme="dark" position="top-center" />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          {children}
+          <NewsletterModal />
+          <SettingsPanel />
+          <Toaster theme="system" position="top-center" />
+        </ThemeProvider>
       </body>
       <Analytics />
     </html>

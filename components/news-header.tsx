@@ -1,6 +1,6 @@
 "use client"
 
-import { NotificationBell } from "./notification-bell"
+import { Settings } from "lucide-react"
 
 const CATEGORIES = [
   { id: "all", label: "All News" },
@@ -19,6 +19,11 @@ interface NewsHeaderProps {
 }
 
 export function NewsHeader({ selectedCategory = "all", setSelectedCategory = () => { } }: NewsHeaderProps) {
+  const openSettings = () => {
+    window.dispatchEvent(new Event("open-settings"))
+    document.dispatchEvent(new Event("open-settings"))
+  }
+
   return (
     <header className="border-b border-border bg-background sticky top-0 z-40">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -30,7 +35,6 @@ export function NewsHeader({ selectedCategory = "all", setSelectedCategory = () 
               alt="OnyeAkụkọ Logo"
               className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
             />
-            {/* <span className="hidden lg:block ml-2 text-lg text-white font-bold tracking-tight">OnyeAkụkọ</span> */}
           </div>
 
           {/* Category Navigation */}
@@ -50,18 +54,14 @@ export function NewsHeader({ selectedCategory = "all", setSelectedCategory = () 
           </nav>
 
           {/* Right Actions */}
-          <div className="flex-shrink-0 flex items-center gap-4">
+          <div className="flex-shrink-0 flex items-center gap-3">
             <button
-              onClick={() => {
-                window.dispatchEvent(new Event('open-newsletter'))
-                document.dispatchEvent(new Event('open-newsletter'))
-              }}
-              title="Subscribe"
-              className="text-[#e59c6a] transition-colors p-1"
+              onClick={openSettings}
+              title="Settings"
+              aria-label="Open settings"
+              className="text-[#e59c6a] hover:text-[#e59c6a]/80 transition-colors p-1.5 hover:bg-[#e59c6a]/10 rounded-full"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM22.539 12.086H1.46v9.844L12 17.55l10.539 4.38v-9.844zM1.46 1.562h21.08v2.836H1.46V1.562z" />
-              </svg>
+              <Settings className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           </div>
         </div>

@@ -118,6 +118,12 @@
 }
 
 @layer base {
+  :root {
+    --base-font-size: 16px;
+  }
+  html {
+    font-size: var(--base-font-size);
+  }
   * {
     @apply border-border outline-ring/50;
   }
@@ -133,3 +139,4 @@
     @apply font-sans font-bold tracking-tight;
   }
 }
+

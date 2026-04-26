@@ -75,8 +75,8 @@ export default function Dashboard() {
       <NewsHeader selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
 
       {/* Massive Header Section */}
-      <div className="w-full flex justify-center items-center py-8 sm:py-12 border-b border-[#222] bg-[#000000]">
-        <h1 className="text-7xl sm:text-9xl md:text-[160px] font-display text-white uppercase tracking-wider leading-[0.8] text-center w-full max-w-[1400px] px-4 cursor-default">
+      <div className="w-full flex justify-center items-center py-8 sm:py-12 border-b border-border bg-background">
+        <h1 className="text-7xl sm:text-9xl md:text-[160px] font-display text-foreground uppercase tracking-wider leading-[0.8] text-center w-full max-w-[1400px] px-4 cursor-default">
           <ScrambleText text="ONYEAKỤKỌ" />
         </h1>
       </div>
