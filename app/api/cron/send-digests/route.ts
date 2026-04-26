@@ -22,9 +22,9 @@ export async function GET(request: NextRequest) {
 
     if (forceTime === "Morning" || forceTime === "Evening") {
       digestTime = forceTime
-    } else if (currentHour === 9) {
+    } else if (currentHour === 8) {
       digestTime = "Morning"
-    } else if (currentHour === 17) { // Evening digest (5 PM UTC = 6 PM Local)
+    } else if (currentHour === 16) { // Evening digest (4 PM UTC = ~6 PM WAT accounting for send lag)
       digestTime = "Evening"
     }
 

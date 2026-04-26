@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, ExternalLink, Share2, Clock, Sparkles, Loader2, ChevronRight } from "lucide-react"
+import { ArrowLeft, ExternalLink, Share2, Clock, Sparkles, Loader2, ChevronRight, Check } from "lucide-react"
 
 interface Article {
   id: string
@@ -33,6 +33,94 @@ const SENTIMENT_STYLES = {
   neutral: "text-[#94a3b8] bg-[#94a3b8]/10 border-[#94a3b8]/30",
 }
 
+// ─── Skeleton loader for article detail page ───
+function ArticleSkeleton() {
+  return (
+    <div className="min-h-screen bg-background animate-pulse">
+      {/* Minimal top bar */}
+      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border">
+        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+          <div className="h-4 w-16 bg-muted rounded-full" />
+          <div className="h-4 w-28 bg-muted rounded-full" />
+          <div className="h-4 w-12 bg-muted rounded-full" />
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {/* Meta pills */}
+        <div className="flex items-center gap-3 mb-5">
+          <div className="h-3 w-20 bg-muted rounded-full" />
+          <div className="w-1 h-1 rounded-full bg-border" />
+          <div className="h-3 w-16 bg-muted rounded-full" />
+          <div className="w-1 h-1 rounded-full bg-border" />
+          <div className="h-5 w-14 bg-muted rounded-full" />
+        </div>
+
+        {/* Title */}
+        <div className="flex flex-col gap-3 mb-6">
+          <div className="h-9 w-full bg-muted rounded-sm" />
+          <div className="h-9 w-5/6 bg-muted rounded-sm" />
+          <div className="h-9 w-3/4 bg-muted rounded-sm" />
+        </div>
+
+        {/* Date */}
+        <div className="h-3 w-40 bg-muted rounded-full mb-8" />
+
+        {/* Hero image */}
+        <div className="w-full aspect-[16/9] bg-muted mb-10 relative overflow-hidden border border-border">
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.6s_infinite] bg-gradient-to-r from-transparent via-foreground/5 to-transparent" />
+        </div>
+
+        {/* TL;DR skeleton */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-4 w-4 bg-[#e59c6a]/30 rounded-sm" />
+            <div className="h-3 w-48 bg-muted rounded-full" />
+          </div>
+          <div className="border border-border bg-muted/20 p-6 flex flex-col gap-3">
+            <div className="h-4 w-full bg-muted rounded-full" />
+            <div className="h-4 w-full bg-muted rounded-full" />
+            <div className="h-4 w-4/5 bg-muted rounded-full" />
+            <div className="mt-2 h-4 w-full bg-muted rounded-full" />
+            <div className="h-4 w-3/4 bg-muted rounded-full" />
+          </div>
+        </div>
+
+        <div className="border-t border-dashed border-border mb-10" />
+
+        {/* Source card skeleton */}
+        <div className="mb-12">
+          <div className="h-3 w-28 bg-muted rounded-full mb-3" />
+          <div className="border border-border p-5 flex items-start gap-4 bg-muted/20">
+            <div className="flex-1 flex flex-col gap-2">
+              <div className="h-3 w-16 bg-muted rounded-full" />
+              <div className="h-4 w-full bg-muted rounded-sm" />
+              <div className="h-3 w-24 bg-muted rounded-full" />
+            </div>
+            <div className="h-4 w-4 bg-muted rounded-sm flex-shrink-0 mt-1" />
+          </div>
+        </div>
+
+        <div className="border-t border-border mb-10" />
+
+        {/* More stories skeleton */}
+        <div className="h-6 w-44 bg-muted rounded-sm mb-6" />
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-start gap-4 py-5 border-b border-border">
+            <div className="flex-shrink-0 w-20 h-16 bg-muted border border-border" />
+            <div className="flex-1 flex flex-col gap-2">
+              <div className="h-2.5 w-24 bg-muted rounded-full" />
+              <div className="h-4 w-full bg-muted rounded-sm" />
+              <div className="h-4 w-4/5 bg-muted rounded-sm" />
+              <div className="h-3 w-3/4 bg-muted rounded-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function ArticlePage() {
   const params = useParams()
   const router = useRouter()
@@ -45,7 +133,7 @@ export default function ArticlePage() {
   const [imageError, setImageError] = useState(false)
   const [loading, setLoading] = useState(true)
   const [summaryLoading, setSummaryLoading] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [shared, setShared] = useState(false)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -99,24 +187,34 @@ export default function ArticlePage() {
       .finally(() => setSummaryLoading(false))
   }, [article])
 
+  // ── Share: native sheet on mobile, clipboard fallback on desktop ──
   const handleShare = async () => {
     const url = window.location.href
+    const title = article?.title || "OnyeAkụkọ"
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url })
+        setShared(true)
+        setTimeout(() => setShared(false), 2000)
+        return
+      } catch {
+        // user cancelled — do nothing
+        return
+      }
+    }
+
+    // Desktop fallback: copy to clipboard
     try {
       await navigator.clipboard.writeText(url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setShared(true)
+      setTimeout(() => setShared(false), 2500)
     } catch {
-      // fallback
+      // silent fail
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-[#e59c6a] animate-spin" />
-      </div>
-    )
-  }
+  if (loading) return <ArticleSkeleton />
 
   if (!article) {
     return (
@@ -154,12 +252,15 @@ export default function ArticlePage() {
             OnyeAkụkọ
           </Link>
 
+          {/* Share button — native sheet on mobile, clipboard on desktop */}
           <button
             onClick={handleShare}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-bold uppercase tracking-wider"
+            className={`flex items-center gap-2 transition-colors text-sm font-bold uppercase tracking-wider ${shared ? "text-[#4ade80]" : "text-muted-foreground hover:text-foreground"}`}
           >
-            <Share2 className="h-4 w-4" />
-            <span className="hidden sm:inline">{copied ? "Copied!" : "Share"}</span>
+            {shared
+              ? <><Check className="h-4 w-4" /><span className="hidden sm:inline">Copied!</span></>
+              : <><Share2 className="h-4 w-4" /><span className="hidden sm:inline">Share</span></>
+            }
           </button>
         </div>
       </div>
@@ -201,7 +302,6 @@ export default function ArticlePage() {
 
         {/* ─── TL;DR / AI SUMMARY SECTION ─── */}
         <div className="mb-10">
-          {/* Section badge */}
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="h-4 w-4 text-[#e59c6a]" />
             <span className="text-xs font-black uppercase tracking-[0.25em] text-[#e59c6a]">
@@ -214,12 +314,14 @@ export default function ArticlePage() {
             )}
           </div>
 
-          {/* Summary card */}
           <div className="border border-[#e59c6a]/30 bg-[#e59c6a]/5 p-6">
             {summaryLoading ? (
-              <div className="flex items-center gap-3 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-                <span className="text-sm font-serif italic">Generating summary...</span>
+              <div className="flex flex-col gap-3 animate-pulse">
+                <div className="h-4 w-full bg-[#e59c6a]/20 rounded-full" />
+                <div className="h-4 w-full bg-[#e59c6a]/20 rounded-full" />
+                <div className="h-4 w-4/5 bg-[#e59c6a]/20 rounded-full" />
+                <div className="mt-1 h-4 w-full bg-[#e59c6a]/20 rounded-full" />
+                <div className="h-4 w-3/4 bg-[#e59c6a]/20 rounded-full" />
               </div>
             ) : (
               <div className="flex flex-col gap-4">
@@ -298,8 +400,7 @@ function RelatedArticleCard({ article }: { article: Article }) {
       href={`/article/${encodeURIComponent(slug)}`}
       className="group flex items-start gap-4 py-5 hover:bg-muted/20 transition-colors -mx-2 px-2"
     >
-      {/* Thumbnail */}
-      <div className="flex-shrink-0 w-20 h-16 sm:w-24 sm:h-18 bg-muted overflow-hidden border border-border">
+      <div className="flex-shrink-0 w-20 h-16 sm:w-24 bg-muted overflow-hidden border border-border">
         <img
           src={(!article.imageUrl || article.imageUrl === "N/A" || imgError) ? "/Group728.png" : article.imageUrl}
           alt={article.title}

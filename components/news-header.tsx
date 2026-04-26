@@ -38,7 +38,7 @@ export function NewsHeader({ selectedCategory = "all", setSelectedCategory = () 
           </div>
 
           {/* Category Navigation */}
-          <nav className="flex-1 flex items-center gap-2 sm:gap-6 overflow-x-auto no-scrollbar scroll-smooth px-2">
+          <nav className="flex-1 flex items-center justify-center gap-2 sm:gap-6 overflow-x-auto no-scrollbar scroll-smooth px-2">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
