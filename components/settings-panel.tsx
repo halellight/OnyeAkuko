@@ -235,7 +235,8 @@ export function SettingsPanel() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="border-0 rounded-none px-4 py-5 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground font-serif bg-transparent"
+                    className="border-0 rounded-none px-4 py-5 text-base focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground font-serif bg-transparent text-foreground caret-foreground"
+                    style={{ fontSize: '16px' }}
                   />
                   <Button
                     type="submit"
@@ -280,10 +281,20 @@ export function SettingsPanel() {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-border">
-          <p className="text-[10px] text-muted-foreground text-center uppercase tracking-[0.2em]">
+        <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-4">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
             OnyeAkụkọ · Intelligence Unfiltered
           </p>
+          <a
+            href="https://x.com/_Onyeakuko"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground hover:text-[#e59c6a] transition-colors uppercase tracking-widest flex-shrink-0"
+            aria-label="Follow OnyeAkụkọ on X"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            @_Onyeakuko
+          </a>
         </div>
       </div>
     </>
