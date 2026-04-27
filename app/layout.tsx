@@ -23,28 +23,25 @@ const anton = Anton({
 })
 
 export const metadata: Metadata = {
-  title: "OnyeAkuko - Your AI-Powered News Curator",
-  description: "Stay informed with curated news from credible sources across all major categories",
+  title: "OnyeAkụkọ | Breaking News, Nigerian News & Global Updates",
+  description: "Get the latest breaking News, Nigerian News, politics, business, and global updates curated by AI. Stay informed with OnyeAkụkọ's credible news aggregator.",
   keywords: [
-    "Nigerian leaders",
-    "public officials",
-    "politics",
-    "government",
-    "ratings",
-    "news",
-    "share opinions",
-    "Nigerian politics",
     "News",
-    "OnyeAkuko",
     "Nigerian News",
+    "Breaking News",
+    "Nigeria",
+    "Nigerian politics",
     "World News",
     "Business News",
     "Technology News",
-    "Culture News",
-    "Science News",
-    "Politics News",
-    "Nigeria"
-
+    "Latest News Nigeria",
+    "African News",
+    "OnyeAkuko",
+    "OnyeAkụkọ",
+    "government",
+    "public officials",
+    "politics",
+    "AI News Curator"
   ],
   authors: [
     {
@@ -64,16 +61,16 @@ export const metadata: Metadata = {
   },
   creator: "Praise Ibe",
   openGraph: {
-    title: "OnyeAkuko - Your AI-Powered News Curator",
-    description: "Stay informed with curated news from credible sources across all major categories",
+    title: "OnyeAkụkọ | Breaking News, Nigerian News & Global Updates",
+    description: "Get the latest breaking News, and global updates curated by AI.",
     url: "https://onyeakuko.online",
-    siteName: "OnyeAkuko",
+    siteName: "OnyeAkụkọ",
     images: [
       {
         url: "/Group728.png",
         width: 1200,
         height: 630,
-        alt: "Your AI-Powered News Curator",
+        alt: "OnyeAkụkọ - News and Updates",
       },
     ],
     locale: "en_US",
@@ -81,8 +78,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "OnyeAkuko - Your AI-Powered News Curator",
-    description: "Stay informed with curated news from credible sources across all major categories",
+    title: "OnyeAkụkọ | Breaking News, Nigerian News & Global Updates",
+    description: "Get the latest breaking News, Nigerian News, politics, business, and global updates curated by AI. Stay informed with OnyeAkụkọ's credible news aggregator.",
     images: ["/Group728.png"],
     creator: "@OnyeAkuko",
   },
@@ -98,6 +95,9 @@ export const metadata: Metadata = {
     },
   },
   metadataBase: new URL("https://onyeakuko.online"),
+  other: {
+    "google-adsense-account": "ca-pub-5452830954847505"
+  }
 }
 
 export default function RootLayout({
@@ -105,8 +105,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsMediaOrganization",
+    "name": "OnyeAkụkọ",
+    "url": "https://onyeakuko.online",
+    "logo": "https://onyeakuko.online/Group728.png",
+    "description": "Get the latest breaking News, Nigerian News, politics, business, and global updates curated by AI."
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className={`${merriweather.variable} ${anton.variable} font-sans antialiased text-[#111]`}>
         <ThemeProvider
           attribute="class"
