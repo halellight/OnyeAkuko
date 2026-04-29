@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   },
   creator: "Praise Ibe",
   openGraph: {
-    title: "OnyeAkụkọ | Breaking News, Nigerian News & Global Updates",
+    title: "OnyeAkụkọ | Breaking News, & Global Updates",
     description: "Get the latest breaking News, and global updates curated by AI.",
     url: "https://onyeakuko.online",
     siteName: "OnyeAkụkọ",
