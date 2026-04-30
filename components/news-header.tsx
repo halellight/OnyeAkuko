@@ -10,7 +10,6 @@ const CATEGORIES = [
   { id: "technology", label: "Technology" },
   { id: "culture", label: "Culture & Lifestyle" },
   { id: "politics", label: "Politics" },
-  { id: "science", label: "Science" },
 ]
 
 interface NewsHeaderProps {

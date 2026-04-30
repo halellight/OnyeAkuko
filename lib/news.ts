@@ -96,7 +96,11 @@ export async function getNews(options: NewsOptions = {}) {
             let countries = region === "nigeria" ? "ng" : (region === "africa" ? "ng,za,ke,gh" : "")
             let categories = category !== "all" ? category : ""
             const url = `${MEDIASTACK_URL}?access_key=${MEDIASTACK_API_KEY}${countries ? `&countries=${countries}` : ""}${categories ? `&categories=${categories}` : ""}&languages=en&limit=50&sort=published_desc`
-            const response = await fetch(url)
+            
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 5000)
+            const response = await fetch(url, { signal: controller.signal })
+            clearTimeout(timeoutId)
             if (response.ok) {
                 const data = await response.json()
                 if (data.data) {

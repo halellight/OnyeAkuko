@@ -387,6 +387,25 @@ export default function ArticlePage() {
           </section>
         )}
       </article>
+
+      <footer className="w-full border-t border-border bg-muted/30 py-8 mt-12">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+            © {new Date().getFullYear()} OnyeAkụkọ
+          </p>
+          <a
+            href="https://x.com/OnyeAkuko"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-foreground hover:text-[#e59c6a] transition-colors"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
+              <g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.008 5.961h-1.91z"></path></g>
+            </svg>
+            Follow on X
+          </a>
+        </div>
+      </footer>
     </div>
   )
 }
