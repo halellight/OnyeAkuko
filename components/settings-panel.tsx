@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, Sun, Moon, Type, Mail, Check, Loader2, Monitor } from "lucide-react"
+import { X, Sun, Mail, Check, Loader2 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,8 +24,6 @@ export function SettingsPanel() {
   const [loading, setLoading] = useState(false)
   const [subscribed, setSubscribed] = useState(false)
   const [error, setError] = useState("")
-  const [morningDigest, setMorningDigest] = useState(true)
-  const [eveningDigest, setEveningDigest] = useState(true)
 
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -86,19 +84,13 @@ export function SettingsPanel() {
     setLoading(true)
     setError("")
 
-    if (!morningDigest && !eveningDigest) {
-      setError("Please select at least one digest time")
-      setLoading(false)
-      return
-    }
-
     try {
       const response = await fetch("/api/notifications/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          digestTimes: { morning: morningDigest, evening: eveningDigest },
+          digestTimes: { morning: true, evening: true }, // Defaulting to both for simple UI
         }),
       })
       if (!response.ok) throw new Error("Failed to subscribe")
@@ -114,187 +106,217 @@ export function SettingsPanel() {
 
   if (!mounted) return null
 
+  // Safely find index, fallback to 1 (normal) if not found
+  const getFontSizeIndex = () => {
+    const idx = FONT_SIZES.findIndex(f => f.id === fontSize)
+    return idx === -1 ? 1 : idx
+  }
+
+  const ThemeMockup = ({ type }: { type: 'light' | 'system' | 'dark' }) => {
+    return (
+      <div className="w-full aspect-[1/1] rounded-[20px] overflow-hidden relative border-[1.5px] border-border shadow-sm flex items-stretch">
+        {/* Background Split */}
+        <div className={`absolute inset-0 flex ${type === 'dark' ? 'bg-[#444444]' : type === 'light' ? 'bg-[#f4f4f4]' : ''}`}>
+          {type === 'system' && (
+            <>
+              <div className="flex-1 bg-[#f4f4f4]"></div>
+              <div className="flex-1 bg-[#444444]"></div>
+            </>
+          )}
+        </div>
+
+        {/* Inner Phone Frame */}
+        <div className="absolute inset-2 md:inset-3 rounded-2xl flex overflow-hidden shadow-sm">
+          {/* Left Side (Light for Light & System, Dark for Dark) */}
+          <div className={`flex-1 flex flex-col pt-3 px-2.5 gap-2.5 ${type === 'dark' ? 'bg-[#222222]' : 'bg-white'}`}>
+             {/* Header */}
+             <div className="flex justify-between items-center">
+                {/* Logo */}
+                <div className="flex flex-wrap w-[18px] gap-[1px]">
+                  <div className="w-[3px] h-[3px] rounded-full bg-[#e59c6a]"></div>
+                  <div className="w-[3px] h-[3px] rounded-full bg-[#e59c6a]"></div>
+                  <div className="w-[3px] h-[3px] rounded-full bg-[#e59c6a]"></div>
+                  <div className="w-[3px] h-[3px] rounded-full bg-[#e59c6a]"></div>
+                  <div className="w-[3px] h-[3px] rounded-full bg-[#e59c6a]"></div>
+                </div>
+                {type === 'light' && <div className="w-4 h-4 rounded-full bg-black/10"></div>}
+                {type === 'dark' && <div className="w-4 h-4 rounded-full bg-white/20"></div>}
+             </div>
+             {/* Pills */}
+             <div className="flex gap-1.5 mt-1">
+                <div className={`h-2.5 w-8 rounded-full ${type === 'dark' ? 'bg-white/10' : 'bg-black/5'}`}></div>
+                <div className={`h-2.5 w-8 rounded-full ${type === 'dark' ? 'bg-white/10' : 'bg-black/5'}`}></div>
+             </div>
+             {/* Content Block */}
+             <div className={`flex-1 rounded-t-xl mt-1 ${type === 'dark' ? 'bg-[#2a2a2a]' : 'bg-[#f8f9fa]'}`}></div>
+          </div>
+
+          {/* Right Side (Only used in System to show Dark mode) */}
+          {type === 'system' && (
+            <div className="flex-1 flex flex-col pt-3 px-2.5 gap-2.5 bg-[#222222]">
+               {/* Header (Right aligned avatar) */}
+               <div className="flex justify-end items-center h-[18px]">
+                  <div className="w-4 h-4 rounded-full bg-[#d4d4d4]"></div>
+               </div>
+               {/* Pills */}
+               <div className="flex gap-1.5 mt-1 h-2.5">
+                  <div className="h-2.5 w-8 rounded-full bg-white/10"></div>
+                  <div className="h-2.5 w-6 rounded-full bg-white/10"></div>
+               </div>
+               {/* Content Block */}
+               <div className="flex-1 rounded-t-xl mt-1 bg-[#2a2a2a]"></div>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
         aria-hidden="true"
+        onClick={() => setIsOpen(false)}
       />
 
-      {/* Panel */}
+      {/* Centered Modal */}
       <div
         ref={panelRef}
-        className={`fixed top-0 right-0 h-full w-full sm:w-[400px] z-50 bg-background border-l border-border shadow-2xl transition-transform duration-400 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col overflow-y-auto ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] sm:w-[460px] max-h-[90vh] z-50 bg-background rounded-[32px] shadow-2xl transition-all duration-400 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col overflow-y-auto overflow-x-hidden ${isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}
         role="dialog"
         aria-label="Settings"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-border sticky top-0 bg-background z-10">
-          <div className="flex items-center gap-3">
-            <span className="font-display text-lg tracking-widest uppercase text-foreground">Settings</span>
-          </div>
+        <div className="flex items-center justify-between px-8 pt-8 pb-6 sticky top-0 bg-background z-10 border-b border-border/30">
+          <h2 className="text-xl font-bold text-foreground tracking-tight">Settings</h2>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 rounded-full hover:bg-muted transition-colors"
+            className="p-2 -mr-2 rounded-full hover:bg-muted transition-colors"
             aria-label="Close settings"
           >
             <X className="h-5 w-5 text-muted-foreground" />
           </button>
         </div>
 
-        <div className="flex-1 px-6 py-6 flex flex-col gap-8">
+        <div className="flex-1 px-8 py-8 flex flex-col gap-10">
 
           {/* ─── THEME ─── */}
           <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Sun className="h-4 w-4 text-[#e59c6a]" />
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Theme</span>
+            <div className="flex items-center gap-2 mb-6">
+              <Sun className="h-5 w-5 text-[#e59c6a]" />
+              <span className="text-[15px] text-muted-foreground font-medium">Theme</span>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-4">
               {[
-                { id: "light", label: "Light", icon: Sun },
-                { id: "dark", label: "Dark", icon: Moon },
-                { id: "system", label: "System", icon: Monitor },
-              ].map(({ id, label, icon: Icon }) => (
+                { id: "light", label: "Light", type: 'light' as const },
+                { id: "system", label: "System", type: 'system' as const },
+                { id: "dark", label: "Dark", type: 'dark' as const },
+              ].map(({ id, label, type }) => (
                 <button
                   key={id}
                   onClick={() => setTheme(id)}
-                  className={`flex flex-col items-center gap-2 p-4 border transition-all duration-200 ${theme === id
-                    ? "border-[#e59c6a] bg-[#e59c6a]/10 text-[#e59c6a]"
-                    : "border-border bg-muted/30 text-muted-foreground hover:border-[#e59c6a]/50 hover:text-foreground"
-                    }`}
+                  className="flex flex-col items-center gap-3 group"
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
+                  <div className={`w-full rounded-[24px] p-1.5 transition-all ${theme === id ? 'ring-2 ring-[#e59c6a] ring-offset-2 ring-offset-background' : 'hover:ring-2 hover:ring-border hover:ring-offset-2 hover:ring-offset-background'}`}>
+                    <ThemeMockup type={type} />
+                  </div>
+                  <span className={`text-[15px] mt-1 ${theme === id ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>{label}</span>
                 </button>
               ))}
             </div>
           </section>
 
-          <div className="border-t border-border" />
+          <div className="border-t border-border/50" />
 
-          {/* ─── ACCESSIBILITY ─── */}
+          {/* ─── TEXT SIZE ─── */}
           <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Type className="h-4 w-4 text-[#e59c6a]" />
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Text Size</span>
+            <div className="flex items-center gap-2 mb-6">
+              <span className="text-[#e59c6a] font-serif font-bold text-lg leading-none">B</span>
+              <span className="text-[15px] text-muted-foreground font-medium">Text Size</span>
             </div>
-            <div className="grid grid-cols-4 gap-2">
-              {FONT_SIZES.map((size) => (
-                <button
-                  key={size.id}
-                  onClick={() => handleFontSize(size.id)}
-                  className={`flex flex-col items-center gap-1.5 p-3 border transition-all duration-200 ${fontSize === size.id
-                    ? "border-[#e59c6a] bg-[#e59c6a]/10 text-[#e59c6a]"
-                    : "border-border bg-muted/30 text-muted-foreground hover:border-[#e59c6a]/50 hover:text-foreground"
-                    }`}
-                >
-                  <span
-                    className="font-bold leading-none"
-                    style={{ fontSize: size.scale }}
-                  >
-                    A
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider">{size.label}</span>
-                </button>
-              ))}
+            
+            <div className="flex flex-col gap-5">
+              {/* Aa Preview Box */}
+              <div className="w-full h-36 rounded-2xl bg-muted/50 flex items-center justify-center border border-border/50">
+                <span className="font-bold text-foreground transition-all duration-300 tracking-tight" style={{ fontSize: FONT_SIZES[getFontSizeIndex()]?.scale ? `calc(${FONT_SIZES[getFontSizeIndex()].scale} * 2.8)` : '44px' }}>
+                  Aa
+                </span>
+              </div>
+
+              {/* Slider Control */}
+              <div className="relative w-full h-[52px] bg-muted/50 rounded-2xl p-1.5 flex items-center border border-border/50">
+                 {/* Sliding Indicator */}
+                 <div 
+                   className="absolute h-[40px] bg-[#e59c6a] rounded-xl transition-all duration-300 ease-out shadow-sm"
+                   style={{ 
+                     width: `calc((100% - 12px) / ${FONT_SIZES.length})`,
+                     left: `calc(6px + (100% - 12px) / ${FONT_SIZES.length} * ${getFontSizeIndex()})`
+                   }}
+                 />
+                 
+                 {/* Clickable Areas & Ticks */}
+                 {FONT_SIZES.map((size) => (
+                   <button
+                     key={size.id}
+                     className="flex-1 h-full relative z-10 flex items-center justify-center cursor-pointer group"
+                     onClick={() => handleFontSize(size.id)}
+                     aria-label={`Set text size to ${size.label}`}
+                   >
+                     {/* Tick mark */}
+                     <div className={`w-0.5 h-3.5 rounded-full transition-colors duration-300 ${fontSize === size.id ? 'bg-white' : 'bg-muted-foreground/30 group-hover:bg-muted-foreground/60'}`} />
+                   </button>
+                 ))}
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-              Adjust text size across all articles for better readability.
-            </p>
           </section>
 
-          <div className="border-t border-border" />
+          <div className="border-t border-border/50" />
 
           {/* ─── NEWSLETTER ─── */}
-          <section>
+          <section className="pb-4">
             <div className="flex items-center gap-2 mb-4">
-              <Mail className="h-4 w-4 text-[#e59c6a]" />
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Newsletter</span>
+              <Mail className="h-5 w-5 text-[#e59c6a]" />
+              <span className="text-[15px] text-muted-foreground font-medium">Subscribe</span>
             </div>
 
-            <p className="text-sm text-muted-foreground mb-5 leading-relaxed font-serif">
-              Get curated Nigerian & world news delivered to your inbox — morning &amp; evening digests.
-            </p>
-
             {subscribed ? (
-              <div className="flex items-center gap-3 py-4 px-4 bg-[#4ade80]/10 border border-[#4ade80]/30">
-                <Check className="h-5 w-5 text-[#4ade80] flex-shrink-0" />
+              <div className="flex items-center gap-4 py-5 px-6 rounded-2xl bg-[#4ade80]/10 border border-[#4ade80]/30">
+                <Check className="h-6 w-6 text-[#4ade80] flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-bold text-[#4ade80] uppercase tracking-wide">Subscribed!</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">You&apos;ll receive daily digests at your selected times.</p>
+                  <p className="text-[15px] font-bold text-[#4ade80]">Subscribed!</p>
+                  <p className="text-[13px] text-muted-foreground mt-0.5">You'll receive our digests soon.</p>
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-0 border border-border">
+              <form onSubmit={handleSubscribe} className="flex flex-col gap-3">
+                <p className="text-[15px] text-muted-foreground mb-2 leading-relaxed">
+                  Get curated Nigerian news delivered to your inbox.
+                </p>
+                
+                <div className="flex items-center gap-2">
                   <Input
                     type="email"
                     placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="border-0 rounded-none px-4 py-5 text-base focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground font-serif bg-transparent text-foreground caret-foreground"
-                    style={{ fontSize: '16px' }}
+                    className="flex-1 rounded-xl px-4 py-6 text-[15px] bg-muted/30 border-border focus-visible:ring-1 focus-visible:ring-[#e59c6a]"
                   />
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="rounded-none bg-[#e59c6a] text-black hover:bg-[#e59c6a]/80 py-5 text-xs font-bold tracking-widest uppercase h-auto transition-colors"
+                    className="rounded-xl bg-[#e59c6a] text-black hover:bg-[#e59c6a]/90 h-[50px] px-6 font-bold transition-colors text-[15px]"
                   >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Subscribe For Free"}
+                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Join"}
                   </Button>
                 </div>
-
-                {error && (
-                  <p className="text-xs font-bold text-red-500 uppercase tracking-widest">{error}</p>
-                )}
-
-                <div className="flex flex-col gap-3 bg-muted/30 p-4 border border-border">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Digest Times</p>
-                  <div className="flex flex-col gap-3">
-                    {[
-                      { key: "morning", label: "Morning — 9:00 AM", checked: morningDigest, onChange: setMorningDigest },
-                      { key: "evening", label: "Evening — 5:00 PM", checked: eveningDigest, onChange: setEveningDigest },
-                    ].map(({ key, label, checked, onChange }) => (
-                      <label key={key} className="flex items-center gap-3 cursor-pointer group">
-                        <div
-                          className={`w-4 h-4 border-2 flex items-center justify-center flex-shrink-0 transition-colors ${checked
-                            ? "border-[#e59c6a] bg-[#e59c6a]"
-                            : "border-border group-hover:border-[#e59c6a]/50"
-                            }`}
-                          onClick={() => onChange(!checked)}
-                        >
-                          {checked && <Check className="h-2.5 w-2.5 text-black" />}
-                        </div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-foreground group-hover:text-[#e59c6a] transition-colors">
-                          {label}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+                {error && <p className="text-xs font-bold text-red-500 mt-1">{error}</p>}
               </form>
             )}
           </section>
-        </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-4">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
-            OnyeAkụkọ · Intelligence Unfiltered
-          </p>
-          <a
-            href="https://x.com/_Onyeakuko"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground hover:text-[#e59c6a] transition-colors uppercase tracking-widest flex-shrink-0"
-            aria-label="Follow OnyeAkụkọ on X"
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-            @_Onyeakuko
-          </a>
         </div>
       </div>
     </>

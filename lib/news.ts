@@ -25,11 +25,11 @@ function detectSentiment(title: string, description: string): "positive" | "nega
 // 🏷️ Category Detection
 function detectCategory(title: string, description: string): string {
     const text = (title + " " + description).toLowerCase()
-    if (text.match(/tech|software|ai|startup|digital|app|crypto|fintech/)) return "technology"
-    if (text.match(/business|market|trade|economy|finance/)) return "business"
-    if (text.match(/government|politics|election|policy/)) return "politics"
-    if (text.match(/culture|film|music|entertainment|fashion/)) return "culture"
-    if (text.match(/science|research|energy|health/)) return "science"
+    if (text.match(/\b(tech|software|ai|startup|digital|app|apps|crypto|fintech)\b/)) return "technology"
+    if (text.match(/\b(business|market|trade|economy|finance)\b/)) return "business"
+    if (text.match(/\b(government|politics|election|policy)\b/)) return "politics"
+    if (text.match(/\b(culture|film|music|entertainment|fashion)\b/)) return "culture"
+    if (text.match(/\b(science|research|energy|health)\b/)) return "science"
     return "world"
 }
 

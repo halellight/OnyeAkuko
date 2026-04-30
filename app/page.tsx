@@ -5,6 +5,8 @@ import { NewsHeader } from "@/components/news-header"
 import { NewsFilters } from "@/components/news-filters"
 import { NewsGrid } from "@/components/news-grid"
 import { ScrambleText } from "@/components/scramble-text"
+import { HeroArticle } from "@/components/hero-article"
+import { SidebarArticle } from "@/components/sidebar-article"
 
 interface Article {
   id: string
@@ -92,7 +94,43 @@ export default function Dashboard() {
           timeRange={timeRange}
           setTimeRange={setTimeRange}
         />
-        <NewsGrid articles={filteredArticles} loading={loading} />
+
+        {loading ? (
+          <NewsGrid articles={[]} loading={true} />
+        ) : filteredArticles.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-lg text-muted-foreground">No articles found matching your filters.</p>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col lg:flex-row gap-8 mb-12">
+              <div className="w-full lg:w-2/3">
+                <HeroArticle {...filteredArticles[0]} />
+              </div>
+              <div className="w-full lg:w-1/3 flex flex-col">
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
+                  <h2 className="text-xl font-black uppercase tracking-wider text-foreground">Latest Stories</h2>
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{filteredArticles.length - 1} MORE</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {filteredArticles.slice(1, 5).map(article => (
+                    <SidebarArticle key={article.id} {...article} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {filteredArticles.length > 5 && (
+              <>
+                <div className="flex items-center gap-4 mb-8">
+                  <h2 className="text-2xl font-black uppercase tracking-wider text-foreground">Even More Stories</h2>
+                  <div className="h-[1px] flex-1 bg-border/50"></div>
+                </div>
+                <NewsGrid articles={filteredArticles.slice(5)} loading={false} />
+              </>
+            )}
+          </>
+        )}
       </div>
     </main>
   )
