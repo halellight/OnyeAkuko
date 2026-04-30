@@ -147,7 +147,7 @@ export function NewsletterModal() {
                         onChange={(e) => setMorningDigest(e.target.checked)}
                         className="w-5 h-5 rounded-none border-2 border-black text-[#e59c6a] focus:ring-[#e59c6a] focus:ring-offset-0 transition-colors"
                       />
-                      <span className="text-sm font-bold text-black uppercase tracking-wider group-hover:text-[#e59c6a] transition-colors">Morning (10:00 AM)</span>
+                      <span className="text-sm font-bold text-black uppercase tracking-wider group-hover:text-[#e59c6a] transition-colors">Morning (9:00 AM)</span>
                     </label>
                     <label className="flex items-center gap-3 cursor-pointer group">
                       <input
@@ -156,7 +156,7 @@ export function NewsletterModal() {
                         onChange={(e) => setEveningDigest(e.target.checked)}
                         className="w-5 h-5 rounded-none border-2 border-black text-[#e59c6a] focus:ring-[#e59c6a] focus:ring-offset-0 transition-colors"
                       />
-                      <span className="text-sm font-bold text-black uppercase tracking-wider group-hover:text-[#e59c6a] transition-colors">Evening (6:00 PM)</span>
+                      <span className="text-sm font-bold text-black uppercase tracking-wider group-hover:text-[#e59c6a] transition-colors">Evening (5:00 PM)</span>
                     </label>
                   </div>
                 </div>

@@ -255,8 +255,8 @@ export function SettingsPanel() {
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Digest Times</p>
                   <div className="flex flex-col gap-3">
                     {[
-                      { key: "morning", label: "Morning — 10:00 AM", checked: morningDigest, onChange: setMorningDigest },
-                      { key: "evening", label: "Evening — 6:00 PM", checked: eveningDigest, onChange: setEveningDigest },
+                      { key: "morning", label: "Morning — 9:00 AM", checked: morningDigest, onChange: setMorningDigest },
+                      { key: "evening", label: "Evening — 5:00 PM", checked: eveningDigest, onChange: setEveningDigest },
                     ].map(({ key, label, checked, onChange }) => (
                       <label key={key} className="flex items-center gap-3 cursor-pointer group">
                         <div
