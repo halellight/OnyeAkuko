@@ -94,7 +94,7 @@ export async function getNews(options: NewsOptions = {}) {
     if (MEDIASTACK_API_KEY) {
         try {
             let countries = region === "nigeria" ? "ng" : (region === "africa" ? "ng,za,ke,gh" : "")
-            let categories = category !== "all" ? category : ""
+            let categories = category !== "all" ? category : "sports,business,technology"
             const url = `${MEDIASTACK_URL}?access_key=${MEDIASTACK_API_KEY}${countries ? `&countries=${countries}` : ""}${categories ? `&categories=${categories}` : ""}&languages=en&limit=50&sort=published_desc`
             
             const controller = new AbortController()

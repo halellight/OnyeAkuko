@@ -96,7 +96,55 @@ export default function Dashboard() {
         />
 
         {loading ? (
-          <NewsGrid articles={[]} loading={true} />
+          <>
+            <div className="flex flex-col lg:flex-row gap-8 mb-12">
+              <div className="w-full lg:w-2/3">
+                <div className="flex flex-col pb-6 animate-pulse">
+                  <div className="w-full aspect-[16/9] bg-muted mb-4 relative overflow-hidden">
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.6s_infinite] bg-gradient-to-r from-transparent via-foreground/5 to-transparent" />
+                  </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="h-2.5 w-20 bg-muted rounded-full" />
+                    <div className="w-1 h-1 rounded-full bg-border" />
+                    <div className="h-2.5 w-16 bg-muted rounded-full" />
+                  </div>
+                  <div className="flex flex-col gap-2 mb-5">
+                    <div className="h-8 md:h-10 w-full bg-muted rounded-sm" />
+                    <div className="h-8 md:h-10 w-4/5 bg-muted rounded-sm" />
+                  </div>
+                  <div className="w-full border-b border-dashed border-border mb-4" />
+                  <div className="flex flex-col gap-2 mb-6">
+                    <div className="h-4 w-full bg-muted rounded-full" />
+                    <div className="h-4 w-full bg-muted rounded-full" />
+                    <div className="h-4 w-3/4 bg-muted rounded-full" />
+                  </div>
+                </div>
+              </div>
+              <div className="w-full lg:w-1/3 flex flex-col">
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
+                  <h2 className="text-xl font-black uppercase tracking-wider text-foreground">Latest Stories</h2>
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">LOADING</span>
+                </div>
+                <div className="flex flex-col gap-4 animate-pulse">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="w-24 h-24 bg-muted flex-shrink-0" />
+                      <div className="flex-1 flex flex-col justify-center gap-2">
+                        <div className="h-2.5 w-16 bg-muted rounded-full" />
+                        <div className="h-4 w-full bg-muted rounded-sm" />
+                        <div className="h-4 w-5/6 bg-muted rounded-sm" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 mb-8">
+              <h2 className="text-2xl font-black uppercase tracking-wider text-foreground">Even More Stories</h2>
+              <div className="h-[1px] flex-1 bg-border/50"></div>
+            </div>
+            <NewsGrid articles={[]} loading={true} />
+          </>
         ) : filteredArticles.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-lg text-muted-foreground">No articles found matching your filters.</p>

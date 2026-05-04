@@ -102,7 +102,7 @@ export function generateDigestEmail(articles: any[], digestTime: string, editori
       </table>
       
       <!-- App Name in Anton -->
-      <h1 style="margin: 0 0 16px 0; color: #000000; font-size: 46px; text-transform: uppercase; letter-spacing: 0.02em; font-family: 'Anton', Impact, 'Arial Black', Arial, sans-serif; font-weight: 900; line-height: 1;">ONYEAKỤKỌ</h1>
+      <h1 style="margin: 0 0 16px 0; color: #000000; font-size: 46px; text-transform: uppercase; letter-spacing: 0.02em; font-family: 'Anton', Impact, 'Arial Black', Arial, sans-serif; font-weight: 900; line-height: 1;">ONYEAKUKO</h1>
       
       <!-- Digest Subtitle -->
       <p style="margin: 0; color: #666666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 700; font-family: 'Satoshi', sans-serif;">INTELLIGENCE DIGEST • ${digestTime.toUpperCase()}</p>
@@ -132,9 +132,9 @@ export function generateDigestEmail(articles: any[], digestTime: string, editori
     <!-- Footer -->
     <div style="padding: 48px 32px; background: #f5f5f5; border-top: 1px solid #d1d1d1; text-align: left;">
       <div style="display: flex; align-items: flex-start; justify-content: flex-start;">
-        <img src="https://onyeakuko.online/Group728.png" alt="OnyeAkụkọ Logo" style="width: 48px; height: 48px; border: 1px solid #cccccc; background: #ffffff;">
+        <img src="https://onyeakuko.online/Group728.png" alt="OnyeAkuko Logo" style="width: 48px; height: 48px; border: 1px solid #cccccc; background: #ffffff;">
         <div style="margin-left: 16px;">
-          <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 900; font-family: 'Satoshi', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; color: #000000;">ONYEAKỤKỌ</h3>
+          <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 900; font-family: 'Satoshi', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; color: #000000;">ONYEAKUKO</h3>
           <p style="margin: 0; font-size: 12px; font-family: 'Georgia', serif; font-style: italic; color: #666666;">Intelligence Unfiltered. Daily.</p>
         </div>
       </div>
@@ -142,7 +142,7 @@ export function generateDigestEmail(articles: any[], digestTime: string, editori
       <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e0e0e0; font-family: 'Satoshi', sans-serif;">
         <a href="https://onyeakuko.online" style="color: #000000; text-decoration: underline; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 16px;">Visit Our Website</a>
         <a href="#" style="color: #666666; text-decoration: underline; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Unsubscribe</a>
-        <p style="margin: 16px 0 0 0; font-size: 10px; color: #999999; font-weight: 500;">&copy; ${new Date().getFullYear()} OnyeAkụkọ All rights reserved.</p>
+        <p style="margin: 16px 0 0 0; font-size: 10px; color: #999999; font-weight: 500;">&copy; ${new Date().getFullYear()} OnyeAkuko All rights reserved.</p>
       </div>
     </div>
   </div>
