@@ -90,8 +90,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to save subscription" }, { status: 500 })
     }
 
-    // 📧 Send Welcome Email (Non-blocking)
-    sendWelcomeEmail(emailKey).catch(err => console.error("Welcome email background error:", err))
+    // 📧 Send Welcome Email
+    await sendWelcomeEmail(emailKey).catch(err => console.error("Welcome email error:", err))
 
     console.log(`[OnyeAkuko] New/Updated subscription: ${emailKey}`, digestTimes)
 

@@ -24,6 +24,7 @@ export function SettingsPanel() {
   const [loading, setLoading] = useState(false)
   const [subscribed, setSubscribed] = useState(false)
   const [error, setError] = useState("")
+  const [digestTimes, setDigestTimes] = useState({ morning: true, evening: true })
 
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -90,15 +91,18 @@ export function SettingsPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          digestTimes: { morning: true, evening: true }, // Defaulting to both for simple UI
+          digestTimes,
         }),
       })
-      if (!response.ok) throw new Error("Failed to subscribe")
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error || "Failed to subscribe")
+      }
       setSubscribed(true)
       setEmail("")
       setTimeout(() => setSubscribed(false), 4000)
-    } catch {
-      setError("Failed to subscribe. Please try again.")
+    } catch (err: any) {
+      setError(err.message || "Failed to subscribe. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -295,6 +299,23 @@ export function SettingsPanel() {
                   Get curated Nigerian news delivered to your inbox.
                 </p>
                 
+                <div className="flex gap-2 mb-1">
+                  <button
+                    type="button"
+                    onClick={() => setDigestTimes(prev => ({ ...prev, morning: !prev.morning }))}
+                    className={`flex-1 py-2.5 text-[13px] font-bold border rounded-none transition-colors ${digestTimes.morning ? 'bg-[#e59c6a] text-black border-[#e59c6a]' : 'bg-transparent text-muted-foreground border-border hover:bg-muted/30'}`}
+                  >
+                    Morning Digest
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDigestTimes(prev => ({ ...prev, evening: !prev.evening }))}
+                    className={`flex-1 py-2.5 text-[13px] font-bold border rounded-none transition-colors ${digestTimes.evening ? 'bg-[#e59c6a] text-black border-[#e59c6a]' : 'bg-transparent text-muted-foreground border-border hover:bg-muted/30'}`}
+                  >
+                    Evening Digest
+                  </button>
+                </div>
+
                 <div className="flex items-center gap-2">
                   <Input
                     type="email"
