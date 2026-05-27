@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, Sun, Mail, Check, Loader2 } from "lucide-react"
+import { X, Sun, Mail, Check, Loader2, User, LogIn, LogOut } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { supabase } from "@/lib/supabase"
+import { toast } from "sonner"
 
 const FONT_SIZES = [
   { id: "small", label: "Small", scale: "14px" },
@@ -26,7 +28,55 @@ export function SettingsPanel() {
   const [error, setError] = useState("")
   const [digestTimes, setDigestTimes] = useState({ morning: true, evening: true })
 
+  // Auth States
+  const [user, setUser] = useState<any>(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
   const panelRef = useRef<HTMLDivElement>(null)
+
+  // Auth Effects
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      setAuthLoading(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      setAuthLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleGoogleSignIn = async () => {
+    setAuthLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+        },
+      })
+      if (error) throw error
+    } catch (err: any) {
+      toast.error(err.message || "Failed to sign in with Google")
+      setAuthLoading(false)
+    }
+  }
+
+  const handleSignOut = async () => {
+    setAuthLoading(true)
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      toast.success("Successfully signed out")
+    } catch (err: any) {
+      toast.error(err.message || "Failed to sign out")
+    } finally {
+      setAuthLoading(false)
+    }
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -205,6 +255,75 @@ export function SettingsPanel() {
         </div>
 
         <div className="flex-1 px-8 py-8 flex flex-col gap-10">
+
+          {/* ─── GOOGLE AUTH PROFILE ─── */}
+          <section>
+            {authLoading ? (
+              <div className="w-full h-24 rounded-2xl bg-muted/40 animate-pulse flex items-center justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : user ? (
+              <div className="bg-[#e59c6a]/5 p-5 rounded-2xl border border-[#e59c6a]/20 flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {user.user_metadata?.avatar_url ? (
+                      <img src={user.user_metadata.avatar_url} alt="Profile" className="w-9 h-9 rounded-full border border-[#e59c6a]/30 object-cover" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-[#e59c6a]/20 text-[#e59c6a] flex items-center justify-center font-bold text-sm">
+                        {user.email?.charAt(0).toUpperCase() || "R"}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-bold text-foreground truncate">
+                        {user.user_metadata?.full_name || user.email?.split("@")[0] || "Reader"}
+                      </h4>
+                      <p className="text-[10px] text-muted-foreground truncate font-serif">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[9px] px-2 py-0.5 bg-[#e59c6a]/10 text-[#e59c6a] font-bold uppercase tracking-widest rounded-sm border border-[#e59c6a]/20 flex-shrink-0">
+                    Verified Reader
+                  </span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-destructive/5 hover:bg-destructive/10 text-destructive border border-destructive/10 transition-colors rounded-xl font-bold text-xs"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="bg-muted/30 p-5 rounded-2xl border border-border/50 flex flex-col gap-4">
+                <div className="flex items-start gap-3">
+                  <User className="h-5 w-5 text-[#e59c6a] mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-sm font-bold text-foreground">Your Profile</h4>
+                    <p className="text-xs text-muted-foreground font-serif leading-relaxed mt-0.5">
+                      Sign in to analyze your reading diet, unlock local perspectives, and manage custom notifications.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleGoogleSignIn}
+                  className="w-full flex items-center justify-center gap-3 py-3 border border-border bg-card hover:bg-muted/40 text-foreground transition-all rounded-xl font-bold text-sm shadow-sm"
+                >
+                  <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                    <g transform="matrix(1, 0, 0, 1, 0, 0)">
+                      <path d="M21.35,11.1H12v2.7h5.38C16.88,15.6,14.77,17,12,17c-3.31,0-6-2.69-6-6s2.69-6,6-6c1.66,0,3.14,0.67,4.24,1.76l2.12-2.12C16.53,2.83,14.38,2,12,2C7.03,2,3,6.03,3,11s4.03,9,9,9c4.97,0,9-4.03,9-9C21,11.55,20.85,11.1,21.35,11.1z" fill="#4285F4"/>
+                      <path d="M12,20c2.38,0,4.53-0.83,6.12-2.24l-2.12-2.12C14.77,16.33,13.44,17,12,17c-2.31,0-4.27-1.46-5.07-3.56L4.76,15.06C6.27,18.01,9.39,20,12,20z" fill="#34A853"/>
+                      <path d="M6.93,13.44C6.72,12.78,6.6,12.09,6.6,11.4c0-0.69,0.12-1.38,0.33-2.04L4.76,7.74C3.89,9.45,3.4,11.37,3.4,13.4c0,2.03,0.49,3.95,1.36,5.66L6.93,13.44z" fill="#FBBC05"/>
+                      <path d="M12,5.6c1.44,0,2.77,0.67,3.88,1.76l2.12-2.12C16.53,3.83,14.38,3,12,3C9.39,3,6.27,4.99,4.76,7.94l2.17,1.62C7.73,7.46,9.69,5.6,12,5.6z" fill="#EA4335"/>
+                    </g>
+                  </svg>
+                  Sign in with Google
+                </button>
+              </div>
+            )}
+          </section>
+
+          <div className="border-t border-border/50" />
 
           {/* ─── THEME ─── */}
           <section>

@@ -42,14 +42,57 @@ function detectRegion(title: string, description: string): "global" | "africa" |
     return "global"
 }
 
-// ✅ Validate article quality
+// ✅ Validate article quality (lenient on descriptions, using smart fallbacks instead of discarding)
 function isQualityArticle(article: any): boolean {
-    if (!article.title || !article.description) return false
-    if (article.description.length < 20) return false
+    if (!article.title) return false
     const source = (article.source || "").toLowerCase()
     const blockedSources = ["reddit", "quora", "gossip", "medium", "tabloid"]
     if (blockedSources.some((blocked) => source.includes(blocked))) return false
     return true
+}
+
+export const SOURCE_BIAS: Record<string, "government-aligned" | "opposition-leaning" | "independent" | "neutral"> = {
+  "The Nation": "government-aligned",
+  "News Agency of Nigeria": "government-aligned",
+  "Daily Trust": "opposition-leaning",
+  "Premium Times": "independent",
+  "The Cable": "independent",
+  "TechCabal": "independent",
+  "Punch Nigeria": "neutral",
+  "ThisDay": "neutral",
+  "Information Nigeria": "neutral",
+  "Vanguard Nigeria": "neutral",
+}
+
+// 🧠 Title keyword Jaccard similarity helper for story clustering
+function getSignificantWords(title: string): Set<string> {
+    const stopwords = new Set([
+        "the", "a", "an", "and", "in", "of", "to", "for", "on", "at", "with", "by", "from", "is", "was", "has", "have", "are", "that", "this", "it", 
+        "says", "urges", "calls", "amid", "over", "as", "after", "about", "who", "whom", "whose", "why", "how", "what", "where", "when"
+    ])
+    return new Set(
+        title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, "")
+            .split(/\s+/)
+            .filter(w => w.length > 3 && !stopwords.has(w))
+    )
+}
+
+function areSimilar(title1: string, title2: string): boolean {
+    const words1 = getSignificantWords(title1)
+    const words2 = getSignificantWords(title2)
+    if (words1.size === 0 || words2.size === 0) return false
+    
+    let intersection = 0
+    for (const w of words1) {
+        if (words2.has(w)) intersection++
+    }
+    
+    const union = words1.size + words2.size - intersection
+    const jaccard = intersection / union
+    
+    return jaccard >= 0.18 || intersection >= 3
 }
 
 export const fallbackArticles = [
@@ -65,6 +108,9 @@ export const fallbackArticles = [
         imageUrl: "/Group728.png",
         link: "https://techcabal.com",
         credibility: 0.9,
+        articles: [],
+        coverageCount: 1,
+        biasDistribution: { government: 0, opposition: 0, independent: 1, neutral: 0 }
     }
 ]
 
@@ -82,7 +128,6 @@ export async function getNews(options: NewsOptions = {}) {
                 ...s,
                 id: `scraped-${Math.random().toString(36).substr(2, 9)}`,
                 published_at: s.date,
-                // If it comes from our Nigerian scraper, it's definitely Nigerian news
                 region: "nigeria"
             })))
         }
@@ -106,7 +151,6 @@ export async function getNews(options: NewsOptions = {}) {
                 if (data.data) {
                     allArticles.push(...data.data.map((a: any) => ({
                         ...a,
-                        // If we specifically requested Nigeria from Mediastack, tag it as such
                         region: countries === "ng" ? "nigeria" : undefined
                     })))
                 }
@@ -116,31 +160,88 @@ export async function getNews(options: NewsOptions = {}) {
         }
     }
 
-    // Transform & Filter
-    const articles = allArticles
+    // Transform raw articles
+    const transformedArticles = allArticles
         .filter(isQualityArticle)
         .map((article: any, index: number) => {
             const mappedTitle = article.title || ""
-            const mappedDesc = article.description || ""
+            let mappedDesc = article.description || ""
+            if (!mappedDesc || mappedDesc.length < 20) {
+                mappedDesc = `Read the full, detailed coverage of this story from ${article.source || "independent sources"}. Get multiple angles, compare coverage framing, and remain well-informed.`
+            }
+            const source = article.source || "Unknown"
+            const bias = SOURCE_BIAS[source] || "neutral"
+
             return {
                 id: article.id || `${index}-${Date.now()}`,
                 title: mappedTitle,
                 description: mappedDesc,
-                source: article.source || "Unknown",
+                source: source,
                 category: detectCategory(mappedTitle, mappedDesc),
                 sentiment: detectSentiment(mappedTitle, mappedDesc),
-                // Use pre-tagged region if available, otherwise detect
                 region: article.region || detectRegion(mappedTitle, mappedDesc),
                 date: article.published_at || article.date || new Date().toISOString(),
                 imageUrl: article.image || article.imageUrl || "/Group728.png",
                 link: article.url || article.link || "#",
                 credibility: 0.85,
+                bias: bias,
             }
         })
         .filter((article, index, self) => self.findIndex((a) => a.title === article.title) === index)
 
+    // Group similar articles into Stories (Ground News style clustering)
+    const stories: any[] = []
+    
+    for (const article of transformedArticles) {
+        let matchedStory = stories.find(s => areSimilar(s.title, article.title))
+        
+        if (matchedStory) {
+            matchedStory.articles.push(article)
+            matchedStory.coverageCount = matchedStory.articles.length
+            
+            const distribution = { government: 0, opposition: 0, independent: 0, neutral: 0 }
+            matchedStory.articles.forEach((a: any) => {
+                if (a.bias === "government-aligned") distribution.government++
+                else if (a.bias === "opposition-leaning") distribution.opposition++
+                else if (a.bias === "independent") distribution.independent++
+                else distribution.neutral++
+            })
+            matchedStory.biasDistribution = distribution
+
+            if (matchedStory.imageUrl === "/Group728.png" && article.imageUrl !== "/Group728.png") {
+                matchedStory.imageUrl = article.imageUrl
+            }
+        } else {
+            const distribution = { government: 0, opposition: 0, independent: 0, neutral: 0 }
+            if (article.bias === "government-aligned") distribution.government++
+            else if (article.bias === "opposition-leaning") distribution.opposition++
+            else if (article.bias === "independent") distribution.independent++
+            else distribution.neutral++
+
+            stories.push({
+                id: `story-${article.id}`,
+                title: article.title,
+                description: article.description,
+                source: article.source,
+                category: article.category,
+                sentiment: article.sentiment,
+                region: article.region,
+                date: article.date,
+                imageUrl: article.imageUrl,
+                link: article.link,
+                credibility: article.credibility,
+                articles: [article],
+                coverageCount: 1,
+                biasDistribution: distribution
+            })
+        }
+    }
+
+    // Sort stories: stories covered by more sources appear first
+    stories.sort((a, b) => b.coverageCount - a.coverageCount)
+
     // Filtering by Metadata if requested
-    let filtered = articles
+    let filtered = stories
     if (region !== "all") filtered = filtered.filter(a => a.region === region)
     if (sentiment !== "all") filtered = filtered.filter(a => a.sentiment === sentiment)
     if (category !== "all") filtered = filtered.filter(a => a.category === category)
@@ -152,14 +253,13 @@ export async function getNews(options: NewsOptions = {}) {
         let timeFiltered = filtered.filter(a => new Date(a.date).getTime() >= thirtySixHoursAgo)
 
         if (timeFiltered.length < 10) {
-            console.log(`[news-service] Only ${timeFiltered.length} articles in 36h. Expanding window.`)
+            console.log(`[news-service] Only ${timeFiltered.length} stories in 36h. Expanding window.`)
             const fortyEightHoursAgo = now.getTime() - (48 * 60 * 60 * 1000)
             timeFiltered = filtered.filter(a => new Date(a.date).getTime() >= fortyEightHoursAgo)
         }
 
-        // Fallback if STILL empty after time filtering
         if (timeFiltered.length === 0) {
-            console.log("[news-service] No articles found after time filter, using fallback.")
+            console.log("[news-service] No stories found after time filter, using fallback.")
             return fallbackArticles
         }
 

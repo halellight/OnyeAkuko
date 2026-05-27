@@ -5,6 +5,21 @@ import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, ExternalLink, Share2, Clock, Sparkles, Loader2, ChevronRight, Check } from "lucide-react"
 
+interface ClusteredArticle {
+  id: string
+  title: string
+  description: string
+  source: string
+  category: string
+  sentiment: "positive" | "neutral" | "negative"
+  region: "global" | "africa" | "nigeria"
+  date: string
+  imageUrl: string
+  link: string
+  credibility: number
+  bias: "government-aligned" | "opposition-leaning" | "independent" | "neutral"
+}
+
 interface Article {
   id: string
   title: string
@@ -17,6 +32,14 @@ interface Article {
   imageUrl: string
   link: string
   credibility: number
+  articles?: ClusteredArticle[]
+  coverageCount?: number
+  biasDistribution?: {
+    government: number
+    opposition: number
+    independent: number
+    neutral: number
+  }
 }
 
 function slugify(title: string) {
@@ -338,30 +361,167 @@ export default function ArticlePage() {
         {/* Divider */}
         <div className="border-t border-dashed border-border mb-10" />
 
-        {/* ─── FULL ARTICLE LINK CARD ─── */}
+        {/* ─── COMPREHENSIVE MULTI-SOURCE COMPARE SECTION (Ground News / Particle) ─── */}
         <div className="mb-12">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3">
-            Continue reading
-          </p>
-          <a
-            href={article.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-start gap-4 p-5 border border-border hover:border-[#e59c6a]/60 bg-muted/30 hover:bg-[#e59c6a]/5 transition-all duration-300"
-          >
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-bold text-[#e59c6a] uppercase tracking-widest">{article.source}</span>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xs font-black uppercase tracking-[0.25em] text-[#e59c6a]">
+              Compare the Coverage
+            </span>
+            <span className="text-[10px] px-2 py-0.5 border border-border text-muted-foreground uppercase tracking-wider font-bold">
+              Media Literacy Tool
+            </span>
+          </div>
+
+          {article.articles && article.articles.length > 1 ? (
+            <div className="flex flex-col gap-6">
+              {/* Media Bias Breakdown */}
+              <div className="border border-border bg-card p-5">
+                <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground mb-3">
+                  Political Framing Distribution
+                </h4>
+                
+                {/* Bias Bar Visualizer */}
+                <div className="flex h-3 w-full rounded-full overflow-hidden bg-muted mb-4">
+                  {(() => {
+                    const dist = article.biasDistribution || { government: 0, opposition: 0, independent: 0, neutral: 0 }
+                    const total = dist.government + dist.opposition + dist.independent + dist.neutral || 1
+                    const govPct = Math.round((dist.government / total) * 100)
+                    const oppPct = Math.round((dist.opposition / total) * 100)
+                    const indPct = Math.round((dist.independent / total) * 100)
+                    const neuPct = Math.round((dist.neutral / total) * 100)
+                    
+                    return (
+                      <>
+                        {govPct > 0 && <div style={{ width: `${govPct}%` }} className="bg-[#ef4444] h-full" title={`Govt-Aligned: ${govPct}%`} />}
+                        {oppPct > 0 && <div style={{ width: `${oppPct}%` }} className="bg-[#3b82f6] h-full" title={`Opposition-Leaning: ${oppPct}%`} />}
+                        {indPct > 0 && <div style={{ width: `${indPct}%` }} className="bg-[#10b981] h-full" title={`Independent: ${indPct}%`} />}
+                        {neuPct > 0 && <div style={{ width: `${neuPct}%` }} className="bg-[#94a3b8] h-full" title={`Mainstream: ${neuPct}%`} />}
+                      </>
+                    )
+                  })()}
+                </div>
+
+                {/* Percentage Labels */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {(() => {
+                    const dist = article.biasDistribution || { government: 0, opposition: 0, independent: 0, neutral: 0 }
+                    const total = dist.government + dist.opposition + dist.independent + dist.neutral || 1
+                    
+                    return (
+                      <>
+                        <div className="flex items-center gap-1.5 text-xs font-bold">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" />
+                          <span className="text-foreground">{Math.round((dist.government/total)*100)}% Govt-Aligned</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs font-bold">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#3b82f6]" />
+                          <span className="text-foreground">{Math.round((dist.opposition/total)*100)}% Opposition</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs font-bold">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#10b981]" />
+                          <span className="text-foreground">{Math.round((dist.independent/total)*100)}% Independent</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs font-bold">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#94a3b8]" />
+                          <span className="text-foreground">{Math.round((dist.neutral/total)*100)}% Mainstream</span>
+                        </div>
+                      </>
+                    )
+                  })()}
+                </div>
               </div>
-              <p className="text-sm font-bold text-foreground leading-snug line-clamp-2 mb-1 group-hover:text-[#e59c6a] transition-colors tracking-tight">
-                {article.title}
-              </p>
-              <p className="text-xs text-muted-foreground font-serif">Read full article →</p>
+
+              {/* Side-by-Side headlines / articles */}
+              <div className="flex flex-col gap-3">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                  Observe Framing Differences in Headlines
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {article.articles.map((art: any, i: number) => {
+                    const biasColors = {
+                      "government-aligned": "border-[#ef4444]/40 bg-[#ef4444]/5 text-[#ef4444]",
+                      "opposition-leaning": "border-[#3b82f6]/40 bg-[#3b82f6]/5 text-[#3b82f6]",
+                      "independent": "border-[#10b981]/40 bg-[#10b981]/5 text-[#10b981]",
+                      "neutral": "border-[#94a3b8]/40 bg-[#94a3b8]/5 text-[#94a3b8]",
+                    }
+                    const biasLabels = {
+                      "government-aligned": "Government Aligned",
+                      "opposition-leaning": "Opposition Leaning",
+                      "independent": "Independent",
+                      "neutral": "Mainstream Media",
+                    }
+                    const b = art.bias || "neutral"
+
+                    const handleExternalClick = () => {
+                      try {
+                        const stored = localStorage.getItem("onyeakuko_diet_clicks")
+                        const history = stored ? JSON.parse(stored) : []
+                        history.push({
+                          source: art.source,
+                          bias: art.bias || "neutral",
+                          timestamp: Date.now()
+                        })
+                        if (history.length > 100) history.shift()
+                        localStorage.setItem("onyeakuko_diet_clicks", JSON.stringify(history))
+                        window.dispatchEvent(new Event("onyeakuko_diet_updated"))
+                      } catch(e){}
+                    }
+
+                    return (
+                      <a
+                        key={i}
+                        href={art.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={handleExternalClick}
+                        className="group flex flex-col justify-between p-5 border border-border hover:border-[#e59c6a]/60 bg-muted/20 hover:bg-[#e59c6a]/5 transition-all duration-300 rounded-sm"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-2 mb-3">
+                            <span className="text-xs font-black uppercase tracking-wider text-[#e59c6a]">{art.source}</span>
+                            <span className={`text-[9px] px-2 py-0.5 font-bold uppercase tracking-wider border rounded-full ${biasColors[b as keyof typeof biasColors]}`}>
+                              {biasLabels[b as keyof typeof biasLabels]}
+                            </span>
+                          </div>
+                          <p className="text-sm font-bold text-foreground leading-snug line-clamp-3 mb-4 group-hover:text-[#e59c6a] transition-colors tracking-tight font-sans">
+                            "{art.title}"
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-3 border-t border-border/60">
+                          <span>Verify details directly</span>
+                          <ExternalLink className="h-3.5 w-3.5 group-hover:text-[#e59c6a] transition-colors" />
+                        </div>
+                      </a>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
-            <div className="flex-shrink-0 pt-1">
-              <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-[#e59c6a] transition-colors" />
-            </div>
-          </a>
+          ) : (
+            <a
+              href={article.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-start gap-4 p-5 border border-border hover:border-[#e59c6a]/60 bg-muted/30 hover:bg-[#e59c6a]/5 transition-all duration-300"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-xs font-bold text-[#e59c6a] uppercase tracking-widest">{article.source}</span>
+                  <span className="text-[9px] px-2 py-0.5 font-bold uppercase tracking-wider border border-[#94a3b8]/40 bg-[#94a3b8]/5 text-[#94a3b8] rounded-full">
+                    Single Outlet Coverage
+                  </span>
+                </div>
+                <p className="text-sm font-bold text-foreground leading-snug line-clamp-2 mb-1 group-hover:text-[#e59c6a] transition-colors tracking-tight">
+                  {article.title}
+                </p>
+                <p className="text-xs text-muted-foreground font-serif">Read original reporting on external site →</p>
+              </div>
+              <div className="flex-shrink-0 pt-1">
+                <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-[#e59c6a] transition-colors" />
+              </div>
+            </a>
+          )}
         </div>
 
         <div className="border-t border-border mb-10" />

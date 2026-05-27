@@ -12,14 +12,14 @@ interface ScrapedArticle {
 const nigerianSources = [
   {
     name: "Daily Trust",
-    url: "https://www.dailytrust.com.ng",
+    url: "https://dailytrust.com",
     selectors: {
-      article: "article.post-item, .jeg_post",
-      title: "h3 a, h2 a, .jeg_post_title a",
-      description: ".post-excerpt, p, .jeg_post_excerpt p",
+      article: ".jeg_post, article, .jeg_hero_item, div.jeg_block_container .jeg_post",
+      title: ".jeg_post_title a, h3 a, h2 a",
+      description: ".jeg_post_excerpt, p",
       link: "a",
-      date: ".post-date, time, .jeg_meta_date",
-      image: "img, .jeg_thumb img",
+      date: ".jeg_meta_date, time",
+      image: ".jeg_thumb img, img",
     },
   },
   {
@@ -47,18 +47,6 @@ const nigerianSources = [
     },
   },
   {
-    name: "TechCabal",
-    url: "https://techcabal.com",
-    selectors: {
-      article: "article, .article-card",
-      title: "h2 a, h1 a, .entry-title a",
-      description: ".article-excerpt, p, .entry-content p",
-      link: "a",
-      date: ".publish-date, time",
-      image: ".article-image img, img, .attachment-medium",
-    },
-  },
-  {
     name: "The Cable",
     url: "https://www.thecable.ng",
     selectors: {
@@ -83,17 +71,41 @@ const nigerianSources = [
     },
   },
   {
-    name: "Vanguard Nigeria",
-    url: "https://www.vanguardngr.com",
+    name: "TechCabal",
+    url: "https://techcabal.com",
     selectors: {
-      article: "article, .entry-card, .entry-list-card, .rt-news-box-item",
-      title: "h2 a, h3 a, .entry-title a",
-      description: ".story-text, p, .rt-news-box-content p, .entry-content",
+      article: "article, .article-card",
+      title: "h2 a, h1 a, .entry-title a",
+      description: ".article-excerpt, p, .entry-content p",
       link: "a",
-      date: ".time, time, .entry-date",
-      image: ".entry-thumbnail-wrapper img, .entry-thumbnail img, img",
+      date: ".publish-date, time",
+      image: ".article-image img, img, .attachment-medium",
     },
   },
+  {
+    name: "The Nation",
+    url: "https://thenationonlineng.net",
+    selectors: {
+      article: "article, .mvp-blog-story, .mvp-widget-feat, .mvp-feat-area-text, h2",
+      title: "a, h2 a, h3 a",
+      link: "a",
+      description: "p, .mvp-blog-story-excerpt",
+      date: "time, .mvp-blog-story-date",
+      image: "img",
+    },
+  },
+  {
+    name: "Premium Times",
+    url: "https://www.premiumtimesng.com",
+    selectors: {
+      article: "article, .jeg_post, .story-card, div.jeg_block_container .jeg_post",
+      title: ".jeg_post_title a, h3 a, h2 a",
+      link: "a",
+      description: "p, .jeg_post_excerpt",
+      date: "time, .jeg_meta_date",
+      image: "img",
+    },
+  }
 ]
 
 export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
@@ -101,12 +113,15 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
     nigerianSources.map(async (source) => {
       try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000)
+        const timeoutId = setTimeout(() => controller.abort(), 15000) // Increased to 15s for slower connections
         
         const response = await fetch(source.url, {
           headers: {
             "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Cache-Control": "no-cache",
           },
           signal: controller.signal,
         })
@@ -124,19 +139,29 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
         $(source.selectors.article).each((_, element) => {
           try {
             const article = $(element)
-            const titleEl = article.find(source.selectors.title).first()
-            const descEl = article.find(source.selectors.description).first()
-            const linkEl = article.find(source.selectors.link).first()
-            const dateEl = article.find(source.selectors.date).first()
-            const imageEl = source.selectors.image ? article.find(source.selectors.image).first() : null
+            
+            // Refined resilient title finder
+            let titleEl = article.find(source.selectors.title).first()
+            if (titleEl.length === 0 && (source.selectors.title === "a" || source.selectors.title.includes("a"))) {
+              if (article.is("a")) titleEl = article
+              else if (article.is("h2") || article.is("h3")) titleEl = article.find("a").first()
+            }
 
             const title = titleEl.text().trim()
-            const link = linkEl.attr("href") || ""
+            
+            // Refined resilient link finder
+            let link = titleEl.attr("href") || ""
+            if (!link && article.is("a")) link = article.attr("href") || ""
+            if (!link) {
+              const firstA = article.find("a").first()
+              link = firstA.attr("href") || ""
+            }
 
             if (title && link) {
+              const descEl = article.find(source.selectors.description).first()
               const description = descEl.text().trim() || ""
 
-              // Resilient date parsing
+              const dateEl = article.find(source.selectors.date).first()
               let rawDate = dateEl.text().trim() || ""
               let date = new Date().toISOString()
               if (rawDate) {
@@ -147,28 +172,25 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
               }
 
               // Enhanced Image Extraction
+              const imageEl = source.selectors.image ? article.find(source.selectors.image).first() : null
               let imageUrl = undefined
               if (imageEl) {
-                // Check for standard img attributes
                 imageUrl = imageEl.attr("data-src") || imageEl.attr("data-original") || imageEl.attr("data-lazy-src") || imageEl.attr("src")
 
-                // Handle background-image (common in TagDiv/Information Nigeria)
                 if (!imageUrl || imageUrl.includes("data:image")) {
                   const style = imageEl.attr("style") || ""
                   const bgMatch = style.match(/background-image:\s*url\((['"]?)(.*?)\1\)/)
                   if (bgMatch) imageUrl = bgMatch[2]
                 }
 
-                // Handle srcset if needed
                 if ((!imageUrl || imageUrl.includes("data:image")) && imageEl.attr("srcset")) {
                   const srcset = imageEl.attr("srcset") || ""
                   imageUrl = srcset.split(",")[0].trim().split(" ")[0]
                 }
 
-                // Filter out generic logos or small icons
                 if (imageUrl) {
                   const lowers = imageUrl.toLowerCase()
-                  if (lowers.includes("logo") || lowers.includes("icon") || lowers.includes("placeholder")) {
+                  if (lowers.includes("logo") || lowers.includes("icon") || lowers.includes("placeholder") || lowers.includes("jeg-empty")) {
                     imageUrl = undefined
                   }
                 }
@@ -204,7 +226,7 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
         })
 
         console.log(`[scraper] Scraped ${sourceArticles.length} articles from ${source.name}`)
-        return sourceArticles.slice(0, 30) // Increased limit to provide more variety for filtering
+        return sourceArticles.slice(0, 30) // Limit to provide more variety for filtering
       } catch (error) {
         console.log(`[scraper] Error for ${source.name}:`, error instanceof Error ? error.message : String(error))
         return []

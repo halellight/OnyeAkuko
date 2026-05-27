@@ -2,6 +2,21 @@
 
 import { NewsArticle } from "./news-article"
 
+interface ClusteredArticle {
+  id: string
+  title: string
+  description: string
+  source: string
+  category: string
+  sentiment: "positive" | "neutral" | "negative"
+  region: "global" | "africa" | "nigeria"
+  date: string
+  imageUrl: string
+  link: string
+  credibility: number
+  bias: "government-aligned" | "opposition-leaning" | "independent" | "neutral"
+}
+
 interface Article {
   id: string
   title: string
@@ -14,6 +29,14 @@ interface Article {
   imageUrl: string
   link: string
   credibility: number
+  articles?: ClusteredArticle[]
+  coverageCount?: number
+  biasDistribution?: {
+    government: number
+    opposition: number
+    independent: number
+    neutral: number
+  }
 }
 
 interface NewsGridProps {
