@@ -1,4 +1,5 @@
 import { scrapeNigerianNews } from "./news-scraper"
+import { supabaseAdmin } from "./supabase"
 
 const MEDIASTACK_API_KEY = process.env.MEDIASTACK_API_KEY
 const MEDIASTACK_URL = "https://api.mediastack.com/v1/news"
@@ -11,7 +12,7 @@ export interface NewsOptions {
 }
 
 // 🧠 Sentiment Detection
-function detectSentiment(title: string, description: string): "positive" | "negative" | "neutral" {
+export function detectSentiment(title: string, description: string): "positive" | "negative" | "neutral" {
     const text = (title + " " + description).toLowerCase()
     const positiveWords = ["growth", "success", "achieve", "improve", "advance", "boost", "surge", "record", "gain", "profit", "launch", "innovation", "investment", "partnership"]
     const negativeWords = ["decline", "loss", "crisis", "drop", "fail", "worse", "concern", "risk", "threat", "attack", "bankruptcy", "layoff", "controversy"]
@@ -23,7 +24,7 @@ function detectSentiment(title: string, description: string): "positive" | "nega
 }
 
 // 🏷️ Category Detection
-function detectCategory(title: string, description: string): string {
+export function detectCategory(title: string, description: string): string {
     const text = (title + " " + description).toLowerCase()
     if (text.match(/\b(tech|software|ai|startup|digital|app|apps|crypto|fintech)\b/)) return "technology"
     if (text.match(/\b(business|market|trade|economy|finance)\b/)) return "business"
@@ -34,7 +35,7 @@ function detectCategory(title: string, description: string): string {
 }
 
 // 🌍 Region Detection
-function detectRegion(title: string, description: string): "global" | "africa" | "nigeria" {
+export function detectRegion(title: string, description: string): "global" | "africa" | "nigeria" {
     const text = (title + " " + description).toLowerCase()
     // Improved detection with more keywords
     if (text.includes("nigeria") || text.includes("lagos") || text.includes("abuja") || text.includes("kano") || text.includes("port harcourt") || text.includes("tinubu") || text.includes("naira") || text.includes("fg") || text.includes("inec")) return "nigeria"
@@ -120,43 +121,81 @@ export async function getNews(options: NewsOptions = {}) {
     const allArticles: any[] = []
     console.log(`[news-service] Fetching news: Category=${category}, Region=${region}, TimeRange=${timeRange}`)
 
-    // 🇳🇬 Scraper
+    // 🗄️ Database-First Fetching from Supabase
+    let dbArticles: any[] = []
     try {
-        const scraped = await scrapeNigerianNews()
-        if (scraped && scraped.length > 0) {
-            allArticles.push(...scraped.map(s => ({
-                ...s,
-                id: `scraped-${Math.random().toString(36).substr(2, 9)}`,
-                published_at: s.date,
-                region: "nigeria"
-            })))
+        const { data, error } = await supabaseAdmin
+            .from("articles")
+            .select("*")
+            .order("date", { ascending: false })
+            .limit(200)
+
+        if (error) {
+            console.error("[news-service] Supabase query error:", error)
+        } else if (data && data.length > 0) {
+            dbArticles = data
+            console.log(`[news-service] Successfully retrieved ${dbArticles.length} articles from Supabase`)
         }
     } catch (e) {
-        console.error("[news-service] Scraper failed:", e)
+        console.error("[news-service] Supabase connection failed:", e)
     }
 
-    // 📡 Mediastack
-    if (MEDIASTACK_API_KEY) {
+    if (dbArticles.length > 0) {
+        // Map database records to the frontend structure
+        allArticles.push(...dbArticles.map(a => ({
+            id: a.id,
+            title: a.title,
+            description: a.description,
+            source: a.source,
+            category: a.category,
+            sentiment: a.sentiment,
+            region: a.region,
+            date: a.date,
+            imageUrl: a.image_url || "/Group728.png",
+            link: a.link,
+            credibility: a.credibility || 0.85,
+            bias: SOURCE_BIAS[a.source] || "neutral"
+        })))
+    } else {
+        console.log("[news-service] Database is empty or unreachable. Falling back to live scraper and Mediastack...")
+        // 🇳🇬 Live Scraper Fallback
         try {
-            let countries = region === "nigeria" ? "ng" : (region === "africa" ? "ng,za,ke,gh" : "")
-            let categories = category !== "all" ? category : "sports,business,technology"
-            const url = `${MEDIASTACK_URL}?access_key=${MEDIASTACK_API_KEY}${countries ? `&countries=${countries}` : ""}${categories ? `&categories=${categories}` : ""}&languages=en&limit=50&sort=published_desc`
-            
-            const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 5000)
-            const response = await fetch(url, { signal: controller.signal })
-            clearTimeout(timeoutId)
-            if (response.ok) {
-                const data = await response.json()
-                if (data.data) {
-                    allArticles.push(...data.data.map((a: any) => ({
-                        ...a,
-                        region: countries === "ng" ? "nigeria" : undefined
-                    })))
-                }
+            const scraped = await scrapeNigerianNews()
+            if (scraped && scraped.length > 0) {
+                allArticles.push(...scraped.map(s => ({
+                    ...s,
+                    id: `scraped-${Math.random().toString(36).substr(2, 9)}`,
+                    published_at: s.date,
+                    region: "nigeria"
+                })))
             }
         } catch (e) {
-            console.error("[news-service] Mediastack failed:", e)
+            console.error("[news-service] Fallback Scraper failed:", e)
+        }
+
+        // 📡 Mediastack Fallback
+        if (MEDIASTACK_API_KEY) {
+            try {
+                let countries = region === "nigeria" ? "ng" : (region === "africa" ? "ng,za,ke,gh" : "")
+                let categories = category !== "all" ? category : "sports,business,technology"
+                const url = `${MEDIASTACK_URL}?access_key=${MEDIASTACK_API_KEY}${countries ? `&countries=${countries}` : ""}${categories ? `&categories=${categories}` : ""}&languages=en&limit=50&sort=published_desc`
+                
+                const controller = new AbortController()
+                const timeoutId = setTimeout(() => controller.abort(), 5000)
+                const response = await fetch(url, { signal: controller.signal })
+                clearTimeout(timeoutId)
+                if (response.ok) {
+                    const data = await response.json()
+                    if (data.data) {
+                        allArticles.push(...data.data.map((a: any) => ({
+                            ...a,
+                            region: countries === "ng" ? "nigeria" : undefined
+                        })))
+                    }
+                }
+            } catch (e) {
+                console.error("[news-service] Fallback Mediastack failed:", e)
+            }
         }
     }
 
