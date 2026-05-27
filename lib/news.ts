@@ -14,32 +14,80 @@ export interface NewsOptions {
 // 🧠 Sentiment Detection
 export function detectSentiment(title: string, description: string): "positive" | "negative" | "neutral" {
     const text = (title + " " + description).toLowerCase()
-    const positiveWords = ["growth", "success", "achieve", "improve", "advance", "boost", "surge", "record", "gain", "profit", "launch", "innovation", "investment", "partnership"]
-    const negativeWords = ["decline", "loss", "crisis", "drop", "fail", "worse", "concern", "risk", "threat", "attack", "bankruptcy", "layoff", "controversy"]
+    
+    const positiveWords = [
+        "growth", "success", "achieve", "improve", "advance", "boost", "surge", "record", "gain", "profit", 
+        "launch", "innovation", "investment", "partnership", "award", "win", "victory", "celebrate", 
+        "triumph", "development", "funding", "raised", "expand", "historic", "peace", "stability"
+    ]
+    
+    const negativeWords = [
+        "decline", "loss", "crisis", "drop", "fail", "worse", "concern", "risk", "threat", "attack", 
+        "bankruptcy", "layoff", "controversy", "protest", "strike", "clash", "crash", "accuse", "arrest", 
+        "killing", "dead", "fatal", "flood", "disaster", "inflation", "hike", "hardship", "kidnap", 
+        "bandit", "terrorist", "corrupt"
+    ]
+    
     const positiveCount = positiveWords.filter((word) => text.includes(word)).length
     const negativeCount = negativeWords.filter((word) => text.includes(word)).length
-    if (positiveCount > negativeCount) return "positive"
+    
+    if (positiveCount > negativeCount + 1) return "positive"
     if (negativeCount > positiveCount) return "negative"
     return "neutral"
 }
 
-// 🏷️ Category Detection
+// 🏷️ Category Detection (Strictly aligning to: politics, technology, culture, world)
 export function detectCategory(title: string, description: string): string {
     const text = (title + " " + description).toLowerCase()
-    if (text.match(/\b(tech|software|ai|startup|digital|app|apps|crypto|fintech)\b/)) return "technology"
-    if (text.match(/\b(business|market|trade|economy|finance)\b/)) return "business"
-    if (text.match(/\b(government|politics|election|policy)\b/)) return "politics"
-    if (text.match(/\b(culture|film|music|entertainment|fashion)\b/)) return "culture"
-    if (text.match(/\b(science|research|energy|health)\b/)) return "science"
+    
+    // 1. TECHNOLOGY (Combined with Science/Health/Fintech/Startups)
+    const techRegex = /\b(tech|technology|software|ai|artificial intelligence|startup|startups|digital|app|apps|crypto|cryptocurrency|bitcoin|fintech|telecom|telecomm|broadband|internet|cyber|hacking|developer|chips|silicon|computing|science|research|scientific|robotics|energy|vaccine|health|medical|disease|space|nasa|galaxy|clinical|dna|biology|physics)\b/
+    
+    // 2. POLITICS (Aligned with Government, INEC, Elections, Judicial, Military, Policy, Laws)
+    const politicsRegex = /\b(politics|political|government|fg|federal government|inec|election|elections|tinubu|presidency|president|governor|governors|senate|senator|senators|minister|ministry|parliament|legislative|bill|law|laws|court|judge|judicial|verdict|supreme court|pdp|apc|lp|party|tribunal|policy|taxation|security|military|police|army|troops|boko haram|ndlea|efcc|corruption|protest|strike|nwc|apc|pdp|buhari|sanwo-olu|wike|fubara)\b/
+    
+    // 3. CULTURE (Entertainment, Music, Film, Movies, Arts, Nollywood, Sports, Lifestyle)
+    const cultureRegex = /\b(culture|cultural|film|films|movie|movies|cinema|music|musical|song|album|afrobeats|nollywood|hollywood|grammy|wizkid|davido|burna|burnaboy|fashion|designer|fashionista|lifestyle|entertainment|arts|artist|museum|heritage|theater|celebrity|celebrities|sports|football|soccer|super eagles|olympics|stadium|champions league|premier league|chelsea|arsenal|manchester|afcon|trophy|festival|dance|cuisine|tourism|chef|guinness record)\b/
+
+    // 4. BUSINESS/ECONOMY (Redirecting to politics or world)
+    const economyRegex = /\b(business|market|trade|economy|economic|finance|financial|stock|stocks|shares|inflation|naira|exchange rate|cbn|bank|banking|investment|revenue|subsidy|fuel price|oil|gas|dangote|refinery|tariff|gdp|exports|imports|customs)\b/
+
+    if (text.match(techRegex)) return "technology"
+    if (text.match(politicsRegex)) return "politics"
+    if (text.match(cultureRegex)) return "culture"
+
+    if (text.match(economyRegex)) {
+        if (text.match(/cbn|government|fg|subsidy|policy|tariff|dangote|refinery|tax|budget/i)) {
+            return "politics"
+        }
+        return "world"
+    }
+
     return "world"
 }
 
 // 🌍 Region Detection
 export function detectRegion(title: string, description: string): "global" | "africa" | "nigeria" {
     const text = (title + " " + description).toLowerCase()
-    // Improved detection with more keywords
-    if (text.includes("nigeria") || text.includes("lagos") || text.includes("abuja") || text.includes("kano") || text.includes("port harcourt") || text.includes("tinubu") || text.includes("naira") || text.includes("fg") || text.includes("inec")) return "nigeria"
-    if (text.match(/africa|kenya|ghana|south africa|uganda/)) return "africa"
+    
+    const nigeriaKeywords = [
+        "nigeria", "nigerian", "lagos", "abuja", "kano", "port harcourt", "tinubu", "naira", "fg", 
+        "inec", "dangote", "wike", "fubara", "sanwo-olu", "nollywood", "afrobeats", "super eagles", 
+        "efcc", "ndlea", "cbn", "nnpc", "asuu", "nlc", "tuc", "kaduna", "enugu", "ibadan", "benin", 
+        "calabar", "jos", "maiduguri", "anambra", "rivers state", "oyo", "kwara"
+    ]
+    
+    const africaKeywords = [
+        "africa", "african", "kenya", "ghana", "south africa", "uganda", "rwanda", "ethiopia", "egypt", 
+        "morocco", "senegal", "tunisia", "algeria", "cameroon", "ecowas", "african union", "au"
+    ]
+
+    const containsNigeria = nigeriaKeywords.some(keyword => text.includes(keyword))
+    if (containsNigeria) return "nigeria"
+
+    const containsAfrica = africaKeywords.some(keyword => text.includes(keyword))
+    if (containsAfrica) return "africa"
+
     return "global"
 }
 
@@ -115,6 +163,8 @@ export const fallbackArticles = [
     }
 ]
 
+let isScrapingInProgress = false
+
 export async function getNews(options: NewsOptions = {}) {
     const { category = "all", region = "all", sentiment = "all", timeRange = "today" } = options
 
@@ -138,6 +188,87 @@ export async function getNews(options: NewsOptions = {}) {
         }
     } catch (e) {
         console.error("[news-service] Supabase connection failed:", e)
+    }
+
+    // 🔄 Lazy Background Self-Healing Cache Scraper
+    // Trigger if database is empty OR the most recent article was scraped more than 2 hours ago
+    let shouldScrapeInBackground = false
+    if (dbArticles.length === 0) {
+        shouldScrapeInBackground = true
+    } else {
+        const latestArticleDate = new Date(dbArticles[0].date).getTime()
+        const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000)
+        if (latestArticleDate < twoHoursAgo) {
+            shouldScrapeInBackground = true
+            console.log(`[news-service] Cache is stale (Latest date: ${dbArticles[0].date}). Triggering background update...`)
+        }
+    }
+
+    if (shouldScrapeInBackground && !isScrapingInProgress) {
+        isScrapingInProgress = true
+        const runBackgroundScrape = async () => {
+            try {
+                console.log("[news-service-lazy] Starting background self-healing news scraper run...")
+                const scraped = await scrapeNigerianNews()
+                if (scraped.length === 0) {
+                    console.log("[news-service-lazy] Background scraper yielded 0 articles.")
+                    return
+                }
+
+                const mappedArticles = scraped.map((s) => {
+                    const title = s.title || ""
+                    let description = s.description || ""
+                    if (!description || description.length < 20) {
+                        description = `Read the full, detailed coverage of this story from ${s.source || "independent sources"}. Get multiple angles, compare coverage framing, and remain well-informed.`
+                    }
+
+                    return {
+                        title: title,
+                        description: description,
+                        source: s.source,
+                        category: detectCategory(title, description),
+                        sentiment: detectSentiment(title, description),
+                        region: detectRegion(title, description),
+                        date: s.date || new Date().toISOString(),
+                        image_url: s.imageUrl || "/Group728.png",
+                        link: s.link || "#",
+                        credibility: 0.85
+                    }
+                })
+
+                // Filter out duplicate titles
+                const uniqueMappedArticles = mappedArticles.filter(
+                    (article, index, self) => self.findIndex((a) => a.title.trim() === article.title.trim()) === index
+                )
+
+                console.log(`[news-service-lazy] Upserting ${uniqueMappedArticles.length} unique background articles into Supabase...`)
+                const { error } = await supabaseAdmin
+                    .from("articles")
+                    .upsert(uniqueMappedArticles, { onConflict: "title" })
+
+                if (error) {
+                    console.error("[news-service-lazy] Background database upsert failed:", error)
+                } else {
+                    console.log("[news-service-lazy] Background self-healing scraper successfully updated cache!")
+                }
+            } catch (e) {
+                console.error("[news-service-lazy] Background self-healing scraper error:", e)
+            } finally {
+                isScrapingInProgress = false
+            }
+        }
+
+        // Deploy background execution via Next.js 15/16 waitUntil or fire-and-forget
+        try {
+            const { waitUntil } = require("next/server")
+            if (typeof waitUntil === "function") {
+                waitUntil(runBackgroundScrape())
+            } else {
+                runBackgroundScrape()
+            }
+        } catch (e) {
+            runBackgroundScrape()
+        }
     }
 
     if (dbArticles.length > 0) {
