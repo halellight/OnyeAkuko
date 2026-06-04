@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     console.log(`[cron-scraper] Upserting ${uniqueMappedArticles.length} unique mapped articles into Supabase...`)
     const { data, error } = await supabaseAdmin
       .from("articles")
-      .upsert(uniqueMappedArticles, { onConflict: "title" })
+      .upsert(uniqueMappedArticles, { onConflict: "title", ignoreDuplicates: true })
 
     if (error) {
       console.error("[cron-scraper] Database upsert failed:", error)

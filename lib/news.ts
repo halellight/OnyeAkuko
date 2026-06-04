@@ -244,7 +244,7 @@ export async function getNews(options: NewsOptions = {}) {
                 console.log(`[news-service-lazy] Upserting ${uniqueMappedArticles.length} unique background articles into Supabase...`)
                 const { error } = await supabaseAdmin
                     .from("articles")
-                    .upsert(uniqueMappedArticles, { onConflict: "title" })
+                    .upsert(uniqueMappedArticles, { onConflict: "title", ignoreDuplicates: true })
 
                 if (error) {
                     console.error("[news-service-lazy] Background database upsert failed:", error)

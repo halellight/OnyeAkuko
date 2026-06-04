@@ -108,6 +108,58 @@ const nigerianSources = [
   }
 ]
 
+export function parseRelativeDate(dateStr: string): Date {
+  const now = new Date()
+  const trimmed = dateStr.toLowerCase().trim()
+  
+  if (!trimmed) return now
+  
+  if (trimmed.includes("just now") || trimmed.includes("seconds ago")) {
+    return now
+  }
+  
+  // Match "X mins ago", "X min ago", "X minutes ago"
+  const minMatch = trimmed.match(/(\d+)\s*min/i)
+  if (minMatch) {
+    const mins = parseInt(minMatch[1], 10)
+    return new Date(now.getTime() - mins * 60 * 1000)
+  }
+  
+  // Match "X hours ago", "X hour ago", "X hr ago", "X hrs ago"
+  const hourMatch = trimmed.match(/(\d+)\s*(hour|hr)/i)
+  if (hourMatch) {
+    const hours = parseInt(hourMatch[1], 10)
+    return new Date(now.getTime() - hours * 60 * 60 * 1000)
+  }
+  
+  // Match "X days ago", "X day ago"
+  const dayMatch = trimmed.match(/(\d+)\s*day/i)
+  if (dayMatch) {
+    const days = parseInt(dayMatch[1], 10)
+    return new Date(now.getTime() - days * 24 * 60 * 60 * 1000)
+  }
+
+  // Match "X weeks ago", "X week ago"
+  const weekMatch = trimmed.match(/(\d+)\s*week/i)
+  if (weekMatch) {
+    const weeks = parseInt(weekMatch[1], 10)
+    return new Date(now.getTime() - weeks * 7 * 24 * 60 * 60 * 1000)
+  }
+  
+  // Match "yesterday"
+  if (trimmed.includes("yesterday")) {
+    return new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  }
+  
+  // Fallback to standard Date parsing
+  const parsed = new Date(dateStr)
+  if (!isNaN(parsed.getTime())) {
+    return parsed
+  }
+  
+  return now
+}
+
 export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
   const results = await Promise.allSettled(
     nigerianSources.map(async (source) => {
@@ -163,13 +215,7 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
 
               const dateEl = article.find(source.selectors.date).first()
               let rawDate = dateEl.text().trim() || ""
-              let date = new Date().toISOString()
-              if (rawDate) {
-                const parsed = new Date(rawDate)
-                if (!isNaN(parsed.getTime())) {
-                  date = parsed.toISOString()
-                }
-              }
+              let date = parseRelativeDate(rawDate).toISOString()
 
               // Enhanced Image Extraction
               const imageEl = source.selectors.image ? article.find(source.selectors.image).first() : null
