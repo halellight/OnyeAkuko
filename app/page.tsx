@@ -7,6 +7,7 @@ import { NewsGrid } from "@/components/news-grid"
 import { ScrambleText } from "@/components/scramble-text"
 import { HeroArticle } from "@/components/hero-article"
 import { SidebarArticle } from "@/components/sidebar-article"
+import { SportsScores } from "@/components/sports-scores"
 
 import { NewsDietAnalyzer } from "@/components/news-diet-analyzer"
 
@@ -145,22 +146,25 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="w-full lg:w-1/3 flex flex-col">
-                <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
-                  <h2 className="text-xl font-black uppercase tracking-wider text-foreground">Latest Stories</h2>
-                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">LOADING</span>
-                </div>
-                <div className="flex flex-col gap-4 animate-pulse">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="flex gap-4">
-                      <div className="w-24 h-24 bg-muted flex-shrink-0" />
-                      <div className="flex-1 flex flex-col justify-center gap-2">
-                        <div className="h-2.5 w-16 bg-muted rounded-full" />
-                        <div className="h-4 w-full bg-muted rounded-sm" />
-                        <div className="h-4 w-5/6 bg-muted rounded-sm" />
+              <div className="w-full lg:w-1/3 flex flex-col gap-6">
+                <SportsScores />
+                <div className="flex flex-col">
+                  <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
+                    <h2 className="text-xl font-black uppercase tracking-wider text-foreground">Latest Stories</h2>
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">LOADING</span>
+                  </div>
+                  <div className="flex flex-col gap-4 animate-pulse">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="flex gap-4">
+                        <div className="w-24 h-24 bg-muted flex-shrink-0" />
+                        <div className="flex-1 flex flex-col justify-center gap-2">
+                          <div className="h-2.5 w-16 bg-muted rounded-full" />
+                          <div className="h-4 w-full bg-muted rounded-sm" />
+                          <div className="h-4 w-5/6 bg-muted rounded-sm" />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -180,15 +184,18 @@ export default function Dashboard() {
               <div className="w-full lg:w-2/3">
                 <HeroArticle {...filteredArticles[0]} />
               </div>
-              <div className="w-full lg:w-1/3 flex flex-col">
-                <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
-                  <h2 className="text-xl font-black uppercase tracking-wider text-foreground">Latest Stories</h2>
-                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{filteredArticles.length - 1} MORE</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  {filteredArticles.slice(1, 5).map(article => (
-                    <SidebarArticle key={article.id} {...article} />
-                  ))}
+              <div className="w-full lg:w-1/3 flex flex-col gap-6">
+                <SportsScores />
+                <div className="flex flex-col">
+                  <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
+                    <h2 className="text-xl font-black uppercase tracking-wider text-foreground">Latest Stories</h2>
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{filteredArticles.length - 1} MORE</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {filteredArticles.slice(1, 5).map(article => (
+                      <SidebarArticle key={article.id} {...article} />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
