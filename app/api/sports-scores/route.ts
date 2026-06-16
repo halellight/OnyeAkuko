@@ -14,9 +14,9 @@ const realScores: Record<number, { homeScore: number, awayScore: number, status?
   10: { homeScore: 7, awayScore: 1, status: "FT", time: "FT" },     // Germany 7-1 Curacao
   11: { homeScore: 2, awayScore: 2, status: "FT", time: "FT" },     // Netherlands 2-2 Japan
   12: { homeScore: 5, awayScore: 1, status: "FT", time: "FT" },     // Sweden 5-1 Tunisia
-  13: { homeScore: 1, awayScore: 0, status: "LIVE", time: "57'" },   // Saudi Arabia 1-0 Uruguay (LIVE in progress)
+  13: { homeScore: 1, awayScore: 1, status: "FT", time: "FT" },      // Saudi Arabia 1-1 Uruguay
   14: { homeScore: 0, awayScore: 0, status: "FT", time: "FT" },      // Spain 0-0 Cabo Verde
-  15: { homeScore: 0, awayScore: 0, status: "Upcoming", time: "" }, // IR Iran vs New Zealand (Upcoming)
+  15: { homeScore: 2, awayScore: 2, status: "FT", time: "FT" },      // IR Iran 2-2 New Zealand
   16: { homeScore: 1, awayScore: 1, status: "FT", time: "FT" },      // Belgium 1-1 Egypt
 }
 
@@ -38,9 +38,9 @@ const fallbackWorldCup = [
     homeTeam: "Saudi Arabia",
     awayTeam: "Uruguay",
     homeScore: 1,
-    awayScore: 0,
-    status: "LIVE",
-    time: "57'",
+    awayScore: 1,
+    status: "FT",
+    time: "FT",
     logoType: "fifa"
   }
 ]

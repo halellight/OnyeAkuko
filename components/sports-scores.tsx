@@ -24,6 +24,8 @@ export function SportsScores() {
   })
   const [matchIndex, setMatchIndex] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const [mouseDownX, setMouseDownX] = useState<number | null>(null)
 
   // Fetch match scores from the backend API
   useEffect(() => {
@@ -59,6 +61,142 @@ export function SportsScores() {
 
     if (type === "fifa") {
       switch (normalized) {
+        case "france":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="1" height="2" fill="#002395" />
+              <rect x="1" width="1" height="2" fill="#FFFFFF" />
+              <rect x="2" width="1" height="2" fill="#ED2939" />
+            </svg>
+          )
+        case "senegal":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="1" height="2" fill="#00853F" />
+              <rect x="1" width="1" height="2" fill="#FDEF42" />
+              <rect x="2" width="1" height="2" fill="#E31B23" />
+              <polygon points="1.5,0.8 1.55,0.95 1.7,0.95 1.58,1.05 1.62,1.2 1.5,1.1 1.38,1.2 1.42,1.05 1.3,0.95 1.45,0.95" fill="#00853F" />
+            </svg>
+          )
+        case "iraq":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="3" height="0.67" fill="#C8102E" />
+              <rect y="0.67" width="3" height="0.67" fill="#FFFFFF" />
+              <rect y="1.34" width="3" height="0.66" fill="#000000" />
+              <circle cx="1.3" cy="1" r="0.06" fill="#007A3D" />
+              <circle cx="1.7" cy="1" r="0.06" fill="#007A3D" />
+            </svg>
+          )
+        case "norway":
+          return (
+            <svg viewBox="0 0 22 16" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="22" height="16" fill="#BA0C2F" />
+              <rect x="6" width="4" height="16" fill="#FFFFFF" />
+              <rect y="6" width="22" height="4" fill="#FFFFFF" />
+              <rect x="7" width="2" height="16" fill="#00205B" />
+              <rect y="7" width="22" height="2" fill="#00205B" />
+            </svg>
+          )
+        case "argentina":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="3" height="0.67" fill="#74ACDF" />
+              <rect y="0.67" width="3" height="0.67" fill="#FFFFFF" />
+              <rect y="1.34" width="3" height="0.66" fill="#74ACDF" />
+              <circle cx="1.5" cy="1" r="0.12" fill="#F9A812" stroke="#8A5A2B" strokeWidth="0.01" />
+            </svg>
+          )
+        case "algeria":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="1.5" height="2" fill="#006233" />
+              <rect x="1.5" width="1.5" height="2" fill="#FFFFFF" />
+              <circle cx="1.5" cy="1" r="0.25" fill="#D21034" />
+              <circle cx="1.6" cy="1" r="0.22" fill="#FFFFFF" />
+              <polygon points="1.65,0.9 1.67,0.97 1.75,0.97 1.69,1.02 1.71,1.1 1.65,1.05 1.59,1.1 1.61,1.02 1.55,0.97 1.63,0.97" fill="#D21034" />
+            </svg>
+          )
+        case "austria":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="3" height="2" fill="#C8102E" />
+              <rect y="0.67" width="3" height="0.66" fill="#FFFFFF" />
+            </svg>
+          )
+        case "jordan":
+          return (
+            <svg viewBox="0 0 2 1" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="2" height="0.33" fill="#000000" />
+              <rect y="0.33" width="2" height="0.33" fill="#FFFFFF" />
+              <rect y="0.66" width="2" height="0.34" fill="#1A7A40" />
+              <polygon points="0,0 0.5,0.5 0,1" fill="#E01E37" />
+              <circle cx="0.18" cy="0.5" r="0.04" fill="#FFFFFF" />
+            </svg>
+          )
+        case "england":
+          return (
+            <svg viewBox="0 0 5 3" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0 bg-white">
+              <rect x="2.1" width="0.8" height="3" fill="#CE1126" />
+              <rect y="1.1" width="5" height="0.8" fill="#CE1126" />
+            </svg>
+          )
+        case "croatia":
+          return (
+            <svg viewBox="0 0 2 1" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="2" height="0.33" fill="#FF0000" />
+              <rect y="0.33" width="2" height="0.33" fill="#FFFFFF" />
+              <rect y="0.66" width="2" height="0.34" fill="#0000C8" />
+              <rect x="0.9" y="0.25" width="0.2" height="0.22" fill="#FF0000" stroke="#FFFFFF" strokeWidth="0.02" />
+            </svg>
+          )
+        case "portugal":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="1.2" height="2" fill="#006600" />
+              <rect x="1.2" width="1.8" height="2" fill="#FF0000" />
+              <circle cx="1.2" cy="1" r="0.2" fill="#FFFF00" />
+            </svg>
+          )
+        case "colombia":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="3" height="1" fill="#FCD116" />
+              <rect y="1" width="3" height="0.5" fill="#003893" />
+              <rect y="1.5" width="3" height="0.5" fill="#CE1126" />
+            </svg>
+          )
+        case "panama":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0 bg-white">
+              <rect x="1.5" width="1.5" height="1" fill="#D21034" />
+              <rect y="1" width="1.5" height="1" fill="#002F6C" />
+              <polygon points="0.75,0.2 0.77,0.35 0.9,0.35 0.8,0.45 0.83,0.6 0.75,0.5 0.67,0.6 0.7,0.45 0.6,0.35 0.73,0.35" fill="#002F6C" />
+              <polygon points="2.25,1.2 2.27,1.35 2.4,1.35 2.3,1.45 2.33,1.6 2.25,1.5 2.17,1.6 2.2,1.45 2.1,1.35 2.23,1.35" fill="#D21034" />
+            </svg>
+          )
+        case "congo dr":
+          return (
+            <svg viewBox="0 0 4 3" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="4" height="3" fill="#007FFF" />
+              <polygon points="0,3 4,0 4,0.4 0.5,3" fill="#FDD017" />
+              <polygon points="0,3 4,0 3.7,0 0,2.8" fill="#FDD017" />
+              <polygon points="0,3 4,0.2 4,0.1 0.1,3" fill="#D21034" />
+              <polygon points="0.6,0.3 0.63,0.45 0.75,0.45 0.65,0.55 0.68,0.7 0.6,0.6 0.52,0.7 0.55,0.55 0.45,0.45 0.57,0.45" fill="#FDD017" />
+            </svg>
+          )
+        case "uzbekistan":
+          return (
+            <svg viewBox="0 0 2 1" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="2" height="0.3" fill="#00C5FF" />
+              <rect y="0.3" width="2" height="0.05" fill="#E31B23" />
+              <rect y="0.35" width="2" height="0.3" fill="#FFFFFF" />
+              <rect y="0.65" width="2" height="0.05" fill="#E31B23" />
+              <rect y="0.7" width="2" height="0.3" fill="#1EB53A" />
+              <circle cx="0.25" cy="0.45" r="0.08" fill="#FFFFFF" />
+              <circle cx="0.29" cy="0.45" r="0.08" fill="#00C5FF" />
+            </svg>
+          )
         case "mexico":
           return (
             <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
@@ -453,6 +591,50 @@ export function SportsScores() {
     }
   }
 
+  // Touch Swipe Handlers for Mobile Swipe Action
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX)
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return
+    const touchEndX = e.changedTouches[0].clientX
+    const diff = touchStartX - touchEndX
+    // Swipe left (next match)
+    if (diff > 50) {
+      nextMatch()
+    }
+    // Swipe right (prev match)
+    else if (diff < -50) {
+      prevMatch()
+    }
+    setTouchStartX(null)
+  }
+
+  // Mouse Drag Swipe Handlers for Desktop Drag Action
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setMouseDownX(e.clientX)
+  }
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (mouseDownX === null) return
+    const mouseEndX = e.clientX
+    const diff = mouseDownX - mouseEndX
+    // Swipe left (next match)
+    if (diff > 50) {
+      nextMatch()
+    }
+    // Swipe right (prev match)
+    else if (diff < -50) {
+      prevMatch()
+    }
+    setMouseDownX(null)
+  }
+
+  const handleMouseLeave = () => {
+    setMouseDownX(null)
+  }
+
   // Render Header Logo Badge
   const renderLogo = (type: "fifa" | "npfl" | "epl") => {
     if (type === "fifa") {
@@ -486,43 +668,12 @@ export function SportsScores() {
   }
 
   return (
-    <div className="w-full flex flex-col mb-4">
-      {/* Tabs list matching top navigation style */}
-      {/* <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1 no-scrollbar">
-        <button
-          onClick={() => setActiveTab("worldcup")}
-          className={`px-3 py-1.5 text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-            activeTab === "worldcup"
-              ? "bg-[#1b802e] text-white"
-              : "bg-muted/40 hover:bg-muted/70 text-muted-foreground border border-border"
-          }`}
-        >
-          World Cup
-        </button>
-        {/* NPFL and Premier League commented out for now until the new season starts */}
-      {/* 
-        <button
-          onClick={() => setActiveTab("npfl")}
-          className={`px-3 py-1.5 text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-            activeTab === "npfl"
-              ? "bg-[#1b802e] text-white"
-              : "bg-muted/40 hover:bg-muted/70 text-muted-foreground border border-border"
-          }`}
-        >
-          NPFL
-        </button>
-        <button
-          onClick={() => setActiveTab("epl")}
-          className={`px-3 py-1.5 text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-            activeTab === "epl"
-              ? "bg-[#1b802e] text-white"
-              : "bg-muted/40 hover:bg-muted/70 text-muted-foreground border border-border"
-          }`}
-        >
-          Premier League
-        </button> 
-        */}
-      {/* </div> */}
+    <div className="w-full flex flex-col mb-4 sports-scores-container">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .sports-scores-container svg {
+          border: none !important;
+        }
+      `}} />
 
       {/* Loading Skeleton */}
       {loading || !currentMatch ? (
@@ -532,8 +683,13 @@ export function SportsScores() {
       ) : (
         /* Main Pitch Card with User's custom background */
         <div
-          className="relative w-full h-[180px] bg-[#1b802e] bg-cover bg-center shadow-xl overflow-hidden rounded-[20px] border border-white/10 group/card"
+          className="relative w-full h-[180px] bg-[#1b802e] bg-cover bg-center shadow-xl overflow-hidden rounded-[20px] border border-white/10 group/card select-none cursor-grab active:cursor-grabbing"
           style={{ backgroundImage: "url('/soccer-pitch-bg.png')" }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
         >
           {/* Content Overlay */}
           <div className="absolute inset-0 p-5 flex flex-col justify-between z-10 bg-black/10">
@@ -598,8 +754,9 @@ export function SportsScores() {
                     <button
                       key={idx}
                       onClick={() => setMatchIndex(idx)}
-                      className={`w-1.5 h-1.5 rounded-full cursor-pointer transition-all duration-300 ${idx === matchIndex ? "bg-white scale-125" : "bg-white/30 hover:bg-white/50"
-                        }`}
+                      className={`w-1.5 h-1.5 rounded-full cursor-pointer transition-all duration-300 ${
+                        idx === matchIndex ? "bg-white scale-125" : "bg-white/30 hover:bg-white/50"
+                      }`}
                     />
                   ))}
                 </div>
