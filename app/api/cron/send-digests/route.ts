@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getNews } from "@/lib/news"
+import { getNews, scrapeAndUpsertNews } from "@/lib/news"
 import { processDigestSending } from "@/lib/notifications"
 
 export async function GET(request: NextRequest) {
@@ -35,7 +35,15 @@ export async function GET(request: NextRequest) {
 
     console.log(`[Cron] Triggering ${digestTime} digest...`)
 
-    const articles = await getNews({ region: "nigeria", timeRange: "today" })
+    console.log("[Cron] Running synchronous scraping check...")
+    try {
+      await scrapeAndUpsertNews()
+    } catch (err) {
+      console.error("[Cron] Synchronous scraping failed, continuing to compile digest with existing database cache:", err)
+    }
+
+    const timeRange = digestTime === "Morning" ? "morning" : "evening"
+    const articles = await getNews({ region: "nigeria", timeRange })
     const digestArticles = articles.slice(0, 5)
 
     // Send emails directly (skips origin fetch)

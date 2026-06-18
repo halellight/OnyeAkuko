@@ -165,6 +165,56 @@ export const fallbackArticles = [
 
 let isScrapingInProgress = false
 
+export async function scrapeAndUpsertNews(): Promise<void> {
+    try {
+        console.log("[news-service-scraper] Starting news scraper run...")
+        const scraped = await scrapeNigerianNews()
+        if (scraped.length === 0) {
+            console.log("[news-service-scraper] Scraper yielded 0 articles.")
+            return
+        }
+
+        const mappedArticles = scraped.map((s) => {
+            const title = s.title || ""
+            let description = s.description || ""
+            if (!description || description.length < 20) {
+                description = `Read the full, detailed coverage of this story from ${s.source || "independent sources"}. Get multiple angles, compare coverage framing, and remain well-informed.`
+            }
+
+            return {
+                title: title,
+                description: description,
+                source: s.source,
+                category: detectCategory(title, description),
+                sentiment: detectSentiment(title, description),
+                region: detectRegion(title, description),
+                date: s.date || new Date().toISOString(),
+                image_url: s.imageUrl || "/Group728.png",
+                link: s.link || "#",
+                credibility: 0.85
+            }
+        })
+
+        // Filter out duplicate titles
+        const uniqueMappedArticles = mappedArticles.filter(
+            (article, index, self) => self.findIndex((a) => a.title.trim() === article.title.trim()) === index
+        )
+
+        console.log(`[news-service-scraper] Upserting ${uniqueMappedArticles.length} unique articles into Supabase...`)
+        const { error } = await supabaseAdmin
+            .from("articles")
+            .upsert(uniqueMappedArticles, { onConflict: "title", ignoreDuplicates: true })
+
+        if (error) {
+            console.error("[news-service-scraper] Database upsert failed:", error)
+        } else {
+            console.log("[news-service-scraper] Scraper successfully updated cache!")
+        }
+    } catch (e) {
+        console.error("[news-service-scraper] Scraper error:", e)
+    }
+}
+
 export async function getNews(options: NewsOptions = {}) {
     const { category = "all", region = "all", sentiment = "all", timeRange = "today" } = options
 
@@ -208,51 +258,7 @@ export async function getNews(options: NewsOptions = {}) {
         isScrapingInProgress = true
         const runBackgroundScrape = async () => {
             try {
-                console.log("[news-service-lazy] Starting background self-healing news scraper run...")
-                const scraped = await scrapeNigerianNews()
-                if (scraped.length === 0) {
-                    console.log("[news-service-lazy] Background scraper yielded 0 articles.")
-                    return
-                }
-
-                const mappedArticles = scraped.map((s) => {
-                    const title = s.title || ""
-                    let description = s.description || ""
-                    if (!description || description.length < 20) {
-                        description = `Read the full, detailed coverage of this story from ${s.source || "independent sources"}. Get multiple angles, compare coverage framing, and remain well-informed.`
-                    }
-
-                    return {
-                        title: title,
-                        description: description,
-                        source: s.source,
-                        category: detectCategory(title, description),
-                        sentiment: detectSentiment(title, description),
-                        region: detectRegion(title, description),
-                        date: s.date || new Date().toISOString(),
-                        image_url: s.imageUrl || "/Group728.png",
-                        link: s.link || "#",
-                        credibility: 0.85
-                    }
-                })
-
-                // Filter out duplicate titles
-                const uniqueMappedArticles = mappedArticles.filter(
-                    (article, index, self) => self.findIndex((a) => a.title.trim() === article.title.trim()) === index
-                )
-
-                console.log(`[news-service-lazy] Upserting ${uniqueMappedArticles.length} unique background articles into Supabase...`)
-                const { error } = await supabaseAdmin
-                    .from("articles")
-                    .upsert(uniqueMappedArticles, { onConflict: "title", ignoreDuplicates: true })
-
-                if (error) {
-                    console.error("[news-service-lazy] Background database upsert failed:", error)
-                } else {
-                    console.log("[news-service-lazy] Background self-healing scraper successfully updated cache!")
-                }
-            } catch (e) {
-                console.error("[news-service-lazy] Background self-healing scraper error:", e)
+                await scrapeAndUpsertNews()
             } finally {
                 isScrapingInProgress = false
             }
@@ -418,7 +424,20 @@ export async function getNews(options: NewsOptions = {}) {
 
     // Time Filtering
     const now = new Date()
-    if (timeRange === "today") {
+    if (timeRange === "morning") {
+        const twentyFourHoursAgo = now.getTime() - (24 * 60 * 60 * 1000)
+        filtered = filtered.filter(a => new Date(a.date).getTime() >= twentyFourHoursAgo)
+    } else if (timeRange === "evening") {
+        const tenHoursAgo = now.getTime() - (10 * 60 * 60 * 1000)
+        let timeFiltered = filtered.filter(a => new Date(a.date).getTime() >= tenHoursAgo)
+
+        if (timeFiltered.length < 5) {
+            console.log(`[news-service] Only ${timeFiltered.length} stories in 10h. Expanding evening window to 24h.`)
+            const twentyFourHoursAgo = now.getTime() - (24 * 60 * 60 * 1000)
+            timeFiltered = filtered.filter(a => new Date(a.date).getTime() >= twentyFourHoursAgo)
+        }
+        filtered = timeFiltered
+    } else if (timeRange === "today") {
         const thirtySixHoursAgo = now.getTime() - (36 * 60 * 60 * 1000)
         let timeFiltered = filtered.filter(a => new Date(a.date).getTime() >= thirtySixHoursAgo)
 

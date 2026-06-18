@@ -14,12 +14,12 @@ const nigerianSources = [
     name: "Daily Trust",
     url: "https://dailytrust.com",
     selectors: {
-      article: ".jeg_post, article, .jeg_hero_item, div.jeg_block_container .jeg_post",
-      title: ".jeg_post_title a, h3 a, h2 a",
-      description: ".jeg_post_excerpt, p",
+      article: ".hor_boxes",
+      title: ".hor_title",
+      description: "",
       link: "a",
-      date: ".jeg_meta_date, time",
-      image: ".jeg_thumb img, img",
+      date: "",
+      image: "img",
     },
   },
   {
@@ -165,7 +165,7 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
     nigerianSources.map(async (source) => {
       try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 15000) // Increased to 15s for slower connections
+        const timeoutId = setTimeout(() => controller.abort(), 4000) // 4 seconds timeout to ensure quick execution within serverless limits
         
         const response = await fetch(source.url, {
           headers: {
