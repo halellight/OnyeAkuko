@@ -74,14 +74,14 @@ function normalizeTeamName(name: string): string {
   if (lower === "iran" || lower === "ir iran" || lower === "islamic republic of iran") return "iran"
   if (lower === "curacao" || lower === "curaçao") return "curacao"
   if (lower === "united states" || lower === "usa" || lower === "united states of america") return "unitedstates"
-  
+
   return lower.replace(/\s+/g, "")
 }
 
 // Scrape Wikipedia for real-time World Cup results
 async function scrapeWikipediaScores(): Promise<Map<string, { homeScore: number, awayScore: number }>> {
   const map = new Map<string, { homeScore: number, awayScore: number }>()
-  
+
   try {
     const res = await fetch("https://en.wikipedia.org/wiki/2026_FIFA_World_Cup", {
       headers: {
@@ -89,21 +89,21 @@ async function scrapeWikipediaScores(): Promise<Map<string, { homeScore: number,
       },
       next: { revalidate: 120 } // Cache Wikipedia page for 2 minutes
     })
-    
+
     if (!res.ok) {
       console.error("[wikipedia-scraper] Wikipedia returned non-OK status:", res.status)
       return map
     }
-    
+
     const html = await res.text()
     const $ = cheerio.load(html)
-    
+
     $(".footballbox").each((_, el) => {
       const box = $(el)
       const home = box.find(".fhome").text().trim()
       const away = box.find(".faway").text().trim()
       const scoreText = box.find(".fscore").text().trim()
-      
+
       const scoreMatch = scoreText.match(/(\d+)[\u2013-](\d+)/)
       if (scoreMatch) {
         const homeScore = parseInt(scoreMatch[1], 10)
@@ -112,12 +112,12 @@ async function scrapeWikipediaScores(): Promise<Map<string, { homeScore: number,
         map.set(key, { homeScore, awayScore })
       }
     })
-    
+
     console.log(`[wikipedia-scraper] Successfully scraped ${map.size} matches from Wikipedia.`)
   } catch (error) {
     console.error("[wikipedia-scraper] Failed to scrape Wikipedia scores:", error)
   }
-  
+
   return map
 }
 
@@ -136,7 +136,7 @@ function getDynamicMatchState(
   // Find score from Wikipedia or fallback to local hardcoded scores
   const lookupKey = `${normalizeTeamName(homeTeam)}_${normalizeTeamName(awayTeam)}`
   const scrapedScore = wikiScoresMap.get(lookupKey)
-  
+
   let finalHome = 0
   let finalAway = 0
   let isKnownResult = false
@@ -166,7 +166,7 @@ function getDynamicMatchState(
         hour12: true,
         timeZone: "UTC"
       }) + " UTC"
-    } catch {}
+    } catch { }
 
     return {
       status: "Upcoming",
@@ -361,10 +361,10 @@ export async function GET() {
     const processedWorldCup = fixtures.map((f: any) => {
       const matchNum = f.matchNumber
       const { status, time, homeScore, awayScore } = getDynamicMatchState(
-        matchNum, 
-        f.kickoffUtc, 
-        f.homeTeam, 
-        f.awayTeam, 
+        matchNum,
+        f.kickoffUtc,
+        f.homeTeam,
+        f.awayTeam,
         wikiScoresMap
       )
 

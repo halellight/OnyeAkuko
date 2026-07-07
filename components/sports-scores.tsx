@@ -669,7 +669,8 @@ export function SportsScores() {
 
   return (
     <div className="w-full flex flex-col mb-4 sports-scores-container">
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .sports-scores-container svg {
           border: none !important;
         }
@@ -754,9 +755,8 @@ export function SportsScores() {
                     <button
                       key={idx}
                       onClick={() => setMatchIndex(idx)}
-                      className={`w-1.5 h-1.5 rounded-full cursor-pointer transition-all duration-300 ${
-                        idx === matchIndex ? "bg-white scale-125" : "bg-white/30 hover:bg-white/50"
-                      }`}
+                      className={`w-1.5 h-1.5 rounded-full cursor-pointer transition-all duration-300 ${idx === matchIndex ? "bg-white scale-125" : "bg-white/30 hover:bg-white/50"
+                        }`}
                     />
                   ))}
                 </div>
