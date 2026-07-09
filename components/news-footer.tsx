@@ -11,7 +11,7 @@ export function NewsFooter() {
               ONYEAKỤKỌ
             </Link>
             <p className="text-xs text-muted-foreground uppercase tracking-widest mt-2 font-bold max-w-sm">
-              Nigerian & African News aggregation curated by AI with bias framing insights.
+              Your trusted Nigerian and Global news aggregator.
             </p>
           </div>
 
