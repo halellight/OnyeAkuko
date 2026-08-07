@@ -30,24 +30,57 @@ const historicalScores: Record<number, { homeScore: number, awayScore: number }>
 
 const fallbackWorldCup = [
   {
-    id: "wc-1",
-    stage: "Group A",
-    homeTeam: "Mexico",
-    awayTeam: "South Africa",
-    homeScore: 2,
+    id: "wc-104",
+    stage: "FINAL",
+    homeTeam: "Spain",
+    awayTeam: "Argentina",
+    homeScore: 1,
     awayScore: 0,
-    status: "FT",
+    status: "FT" as const,
+    time: "AET",
+    logoType: "fifa"
+  },
+  {
+    id: "wc-102",
+    stage: "SEMI FINAL",
+    homeTeam: "Spain",
+    awayTeam: "France",
+    homeScore: 2,
+    awayScore: 1,
+    status: "FT" as const,
     time: "FT",
     logoType: "fifa"
   },
   {
-    id: "wc-13",
-    stage: "Group H",
-    homeTeam: "Saudi Arabia",
-    awayTeam: "Uruguay",
-    homeScore: 1,
+    id: "wc-101",
+    stage: "SEMI FINAL",
+    homeTeam: "Argentina",
+    awayTeam: "England",
+    homeScore: 2,
     awayScore: 1,
-    status: "FT",
+    status: "FT" as const,
+    time: "FT",
+    logoType: "fifa"
+  },
+  {
+    id: "wc-99",
+    stage: "QUARTER FINAL",
+    homeTeam: "Spain",
+    awayTeam: "Belgium",
+    homeScore: 3,
+    awayScore: 1,
+    status: "FT" as const,
+    time: "FT",
+    logoType: "fifa"
+  },
+  {
+    id: "wc-100",
+    stage: "QUARTER FINAL",
+    homeTeam: "France",
+    awayTeam: "Morocco",
+    homeScore: 2,
+    awayScore: 0,
+    status: "FT" as const,
     time: "FT",
     logoType: "fifa"
   }
@@ -73,7 +106,9 @@ function normalizeTeamName(name: string): string {
   if (lower === "cape verde" || lower === "cabo verde") return "caboverde"
   if (lower === "iran" || lower === "ir iran" || lower === "islamic republic of iran") return "iran"
   if (lower === "curacao" || lower === "curaçao") return "curacao"
-  if (lower === "united states" || lower === "usa" || lower === "united states of america") return "unitedstates"
+  if (lower === "united states" || lower === "usa" || lower === "us" || lower === "united states of america") return "unitedstates"
+  if (lower === "trinidad and tobago" || lower === "trinidad & tobago") return "trinidadandtobago"
+  if (lower === "bosnia and herzegovina" || lower === "bosnia & herzegovina" || lower === "bosnia") return "bosniaandherzegovina"
 
   return lower.replace(/\s+/g, "")
 }
@@ -87,7 +122,7 @@ async function scrapeWikipediaScores(): Promise<Map<string, { homeScore: number,
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
       },
-      next: { revalidate: 120 } // Cache Wikipedia page for 2 minutes
+      cache: "no-store" // Avoid Next.js data cache 2MB limit for Wikipedia page
     })
 
     if (!res.ok) {
@@ -358,8 +393,32 @@ export async function GET() {
     // Scrape Wikipedia for current real-world scores
     const wikiScoresMap = await scrapeWikipediaScores()
 
+    const knockoutOverrides: Record<number, { homeTeam: string, awayTeam: string, stage: string, homeScore: number, awayScore: number, status: "FT" | "LIVE" | "Upcoming", time: string }> = {
+      104: { homeTeam: "Spain", awayTeam: "Argentina", stage: "FINAL", homeScore: 1, awayScore: 0, status: "FT", time: "AET" },
+      103: { homeTeam: "France", awayTeam: "England", stage: "THIRD PLACE", homeScore: 2, awayScore: 1, status: "FT", time: "FT" },
+      102: { homeTeam: "Spain", awayTeam: "France", stage: "SEMI FINAL", homeScore: 2, awayScore: 1, status: "FT", time: "FT" },
+      101: { homeTeam: "Argentina", awayTeam: "England", stage: "SEMI FINAL", homeScore: 2, awayScore: 1, status: "FT", time: "FT" },
+      100: { homeTeam: "France", awayTeam: "Morocco", stage: "QUARTER FINAL", homeScore: 2, awayScore: 0, status: "FT", time: "FT" },
+      99: { homeTeam: "Spain", awayTeam: "Belgium", stage: "QUARTER FINAL", homeScore: 3, awayScore: 1, status: "FT", time: "FT" }
+    }
+
     const processedWorldCup = fixtures.map((f: any) => {
       const matchNum = f.matchNumber
+      if (knockoutOverrides[matchNum]) {
+        const o = knockoutOverrides[matchNum]
+        return {
+          id: `wc-${matchNum}`,
+          stage: o.stage,
+          homeTeam: o.homeTeam,
+          awayTeam: o.awayTeam,
+          homeScore: o.homeScore,
+          awayScore: o.awayScore,
+          status: o.status,
+          time: o.time,
+          logoType: "fifa"
+        }
+      }
+
       const { status, time, homeScore, awayScore } = getDynamicMatchState(
         matchNum,
         f.kickoffUtc,
