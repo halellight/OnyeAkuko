@@ -9,6 +9,7 @@ import { HeroArticle } from "@/components/hero-article"
 import { SidebarArticle } from "@/components/sidebar-article"
 import { SportsScores } from "@/components/sports-scores"
 import { NewsDietAnalyzer } from "@/components/news-diet-analyzer"
+// import { HeadlineChecker } from "@/components/headline-checker"
 import { NewsFooter } from "@/components/news-footer"
 
 interface ClusteredArticle {
@@ -55,6 +56,7 @@ export default function Dashboard() {
   const [selectedRegion, setSelectedRegion] = useState<string>("all")
   const [selectedSentiment, setSelectedSentiment] = useState<string>("all")
   const [timeRange, setTimeRange] = useState<string>("today")
+  const [searchQuery, setSearchQuery] = useState<string>("")
 
   useEffect(() => {
     const loadArticles = async () => {
@@ -80,7 +82,7 @@ export default function Dashboard() {
         }
       } catch (error) {
         console.error("Failed to load articles:", error)
-        setArticles([]) // Set empty array on error instead of leaving undefined
+        setArticles([])
       } finally {
         setLoading(false)
       }
@@ -91,16 +93,44 @@ export default function Dashboard() {
 
   const filteredArticles = Array.isArray(articles)
     ? articles.filter((article) => {
-      if (selectedCategory !== "all" && article.category !== selectedCategory) return false
+      // 🇳🇬 Nigeria Filter Match (handles both regional classification and category fallback)
+      if (selectedCategory === "nigeria") {
+        if (article.region !== "nigeria" && article.category !== "nigeria") return false
+      } else if (selectedCategory !== "all" && article.category !== selectedCategory) {
+        return false
+      }
       if (selectedRegion !== "all" && article.region !== selectedRegion) return false
       if (selectedSentiment !== "all" && article.sentiment !== selectedSentiment) return false
+
+      // 🔍 Real-time Search Match
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim()
+        const matchTitle = (article.title || "").toLowerCase().includes(query)
+        const matchDesc = (article.description || "").toLowerCase().includes(query)
+        const matchSource = (article.source || "").toLowerCase().includes(query)
+        const matchCategory = (article.category || "").toLowerCase().includes(query)
+        const matchSubArticles = article.articles?.some((sub) =>
+          (sub.title || "").toLowerCase().includes(query) ||
+          (sub.source || "").toLowerCase().includes(query)
+        )
+
+        if (!matchTitle && !matchDesc && !matchSource && !matchCategory && !matchSubArticles) {
+          return false
+        }
+      }
+
       return true
     })
     : []
 
   return (
     <main className="min-h-screen bg-background">
-      <NewsHeader selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
+      <NewsHeader
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
 
       {/* Massive Header Section */}
       <div className="w-full flex justify-center items-center py-8 sm:py-12 border-b border-border bg-background">
@@ -120,6 +150,23 @@ export default function Dashboard() {
           timeRange={timeRange}
           setTimeRange={setTimeRange}
         />
+
+        {/* Active Search Banner */}
+        {searchQuery.trim() && (
+          <div className="mb-6 p-3 sm:p-4 rounded-xl bg-muted/20 border border-border flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Search Results for:</span>
+              <span className="text-sm font-black text-[#e59c6a]">"{searchQuery}"</span>
+              <span className="text-xs text-muted-foreground">({filteredArticles.length} found)</span>
+            </div>
+            <button
+              onClick={() => setSearchQuery("")}
+              className="text-xs font-bold text-muted-foreground hover:text-foreground underline cursor-pointer"
+            >
+              Clear Search
+            </button>
+          </div>
+        )}
 
         {loading ? (
           <>
@@ -175,8 +222,31 @@ export default function Dashboard() {
             <NewsGrid articles={[]} loading={true} />
           </>
         ) : filteredArticles.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-lg text-muted-foreground">No articles found matching your filters.</p>
+          <div className="text-center py-16 px-4 border border-dashed border-border rounded-2xl my-6">
+            <h3 className="text-xl font-black uppercase tracking-wider text-foreground mb-2">No Stories Found</h3>
+            <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+              {searchQuery
+                ? `No stories matched your search for "${searchQuery}". Try different keywords or reset filters.`
+                : "No articles found matching your selected category."}
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="px-4 py-2 text-xs font-black uppercase tracking-wider bg-[#e59c6a] text-black rounded-full hover:opacity-90 transition-all"
+                >
+                  Clear Search
+                </button>
+              )}
+              {selectedCategory !== "all" && (
+                <button
+                  onClick={() => setSelectedCategory("all")}
+                  className="px-4 py-2 text-xs font-black uppercase tracking-wider bg-muted text-foreground rounded-full hover:bg-muted/80 transition-all"
+                >
+                  View All Feed
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <>
@@ -199,6 +269,11 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+
+            {/* OnyeAkụkọ Instant Headline & Link Credibility Checker */}
+            {/* <div className="mb-12">
+              <HeadlineChecker />
+            </div> */}
 
             {filteredArticles.length > 5 && (
               <>

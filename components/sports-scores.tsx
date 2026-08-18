@@ -12,13 +12,13 @@ interface Match {
   awayScore: number
   status: "FT" | "LIVE" | "Upcoming"
   time: string
-  logoType: "fifa" | "npfl" | "epl"
+  logoType: "wafcon" | "fifa" | "npfl" | "epl"
 }
 
 export function SportsScores() {
-  const [activeTab, setActiveTab] = useState<"worldcup" | "npfl" | "epl">("worldcup")
-  const [matchData, setMatchData] = useState<Record<"worldcup" | "npfl" | "epl", Match[]>>({
-    worldcup: [],
+  const [activeTab, setActiveTab] = useState<"wafcon" | "npfl" | "epl">("wafcon")
+  const [matchData, setMatchData] = useState<Record<string, Match[]>>({
+    wafcon: [],
     npfl: [],
     epl: []
   })
@@ -34,7 +34,11 @@ export function SportsScores() {
         const response = await fetch("/api/sports-scores")
         if (response.ok) {
           const data = await response.json()
-          setMatchData(data)
+          setMatchData({
+            wafcon: data.wafcon || data.worldcup || [],
+            npfl: data.npfl || [],
+            epl: data.epl || []
+          })
         }
       } catch (error) {
         console.error("Failed to fetch sports scores:", error)
@@ -56,11 +60,86 @@ export function SportsScores() {
   }, [activeTab])
 
   // Custom SVG Flags and Crests Mapper
-  const getTeamLogo = (name: string, type: "fifa" | "npfl" | "epl") => {
+  const getTeamLogo = (name: string, type: "wafcon" | "fifa" | "npfl" | "epl") => {
     const normalized = name.trim().toLowerCase()
 
-    if (type === "fifa") {
+    if (type === "wafcon" || type === "fifa") {
       switch (normalized) {
+        case "nigeria":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="1" height="2" fill="#008751" />
+              <rect x="1" width="1" height="2" fill="#FFFFFF" />
+              <rect x="2" width="1" height="2" fill="#008751" />
+            </svg>
+          )
+        case "morocco":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="3" height="2" fill="#C1272D" />
+              <polygon points="1.5,0.7 1.62,1.05 1.95,1.05 1.68,1.25 1.78,1.6 1.5,1.4 1.22,1.6 1.32,1.25 1.05,1.05 1.38,1.05" fill="none" stroke="#006233" strokeWidth="0.08" />
+            </svg>
+          )
+        case "south africa":
+        case "southafrica":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="3" height="1" fill="#E03C31" />
+              <rect y="1" width="3" height="1" fill="#001489" />
+              <polygon points="0,0 1.2,1 0,2" fill="#000000" />
+              <polygon points="0,0 0.25,0 1.45,1 0.25,2 0,2 1.2,1" fill="#FFB81C" />
+              <path d="M0,0.6 L1,1 L3,1 L3,1.4 L1,1.4 L0,1.8 Z" fill="#007749" />
+            </svg>
+          )
+        case "zambia":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="3" height="2" fill="#198A00" />
+              <rect x="2.0" y="1" width="0.33" height="1" fill="#DE2010" />
+              <rect x="2.33" y="1" width="0.33" height="1" fill="#000000" />
+              <rect x="2.66" y="1" width="0.34" height="1" fill="#EF7D00" />
+              <circle cx="2.5" cy="0.5" r="0.25" fill="#EF7D00" />
+            </svg>
+          )
+        case "cameroon":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="1" height="2" fill="#007A5E" />
+              <rect x="1" width="1" height="2" fill="#CE1126" />
+              <rect x="2" width="1" height="2" fill="#FCD116" />
+              <polygon points="1.5,0.85 1.54,0.96 1.65,0.96 1.56,1.03 1.59,1.14 1.5,1.07 1.41,1.14 1.44,1.03 1.35,0.96 1.46,0.96" fill="#FCD116" />
+            </svg>
+          )
+        case "botswana":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="3" height="2" fill="#75AADB" />
+              <rect y="0.8" width="3" height="0.4" fill="#FFFFFF" />
+              <rect y="0.88" width="3" height="0.24" fill="#000000" />
+            </svg>
+          )
+        case "burundi":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="3" height="2" fill="#1EB53A" />
+              <polygon points="0,0 3,2 0,2 3,0" fill="#CE1126" />
+              <line x1="0" y1="0" x2="3" y2="2" stroke="#FFFFFF" strokeWidth="0.3" />
+              <line x1="0" y1="2" x2="3" y2="0" stroke="#FFFFFF" strokeWidth="0.3" />
+              <circle cx="1.5" cy="1" r="0.45" fill="#FFFFFF" />
+            </svg>
+          )
+        case "togo":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="3" height="0.4" fill="#006A4E" />
+              <rect y="0.4" width="3" height="0.4" fill="#FFCE00" />
+              <rect y="0.8" width="3" height="0.4" fill="#006A4E" />
+              <rect y="1.2" width="3" height="0.4" fill="#FFCE00" />
+              <rect y="1.6" width="3" height="0.4" fill="#006A4E" />
+              <rect width="1.2" height="1.2" fill="#D21034" />
+              <polygon points="0.6,0.4 0.65,0.55 0.8,0.55 0.68,0.65 0.72,0.8 0.6,0.7 0.48,0.8 0.52,0.65 0.4,0.55 0.55,0.55" fill="#FFFFFF" />
+            </svg>
+          )
         case "france":
           return (
             <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
@@ -518,35 +597,38 @@ export function SportsScores() {
             </svg>
           )
         default:
-          // Fallback globe logo
           return (
-            <svg viewBox="0 0 20 20" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0 bg-slate-700 p-0.5" fill="none" stroke="white" strokeWidth="1.2">
-              <circle cx="10" cy="10" r="8" stroke="white" />
-              <path d="M10 2v16M2 10h16M4 6c3 2 3 6 0 8M16 6c-3 2-3 6 0 8" opacity="0.7" />
-            </svg>
+            <div className="w-7 h-4.5 bg-white/20 border border-white/30 rounded-sm flex items-center justify-center flex-shrink-0 text-[9px] font-black text-white">
+              {name.slice(0, 3).toUpperCase()}
+            </div>
           )
       }
     }
 
-    // Shield Mapper for club teams
-    let primary = "#94a3b8"
-    let secondary = "#ffffff"
-    let letter = name.charAt(0).toUpperCase()
+    // NPFL and EPL Club Badges
+    let primary = "#2563EB"
+    let secondary = "#FFFFFF"
+    let letter = name.slice(0, 1).toUpperCase()
 
     if (type === "npfl") {
-      if (normalized.includes("rangers")) {
-        primary = "#E21C1C"
-        letter = "R"
-      } else if (normalized.includes("enyimba")) {
-        primary = "#0006B1"
+      if (normalized.includes("enyimba")) {
+        primary = "#1E3A8A"
         letter = "E"
-      } else if (normalized.includes("pillars")) {
-        primary = "#FFB81C"
-        secondary = "#0006B1"
-        letter = "K"
       } else if (normalized.includes("remo")) {
-        primary = "#007C3C"
+        primary = "#047857"
         letter = "R"
+      } else if (normalized.includes("rivers")) {
+        primary = "#1D4ED8"
+        letter = "R"
+      } else if (normalized.includes("rangers")) {
+        primary = "#B91C1C"
+        letter = "R"
+      } else if (normalized.includes("shooting")) {
+        primary = "#2563EB"
+        letter = "3"
+      } else if (normalized.includes("kano")) {
+        primary = "#D97706"
+        letter = "K"
       }
     } else if (type === "epl") {
       if (normalized.includes("arsenal")) {
@@ -591,62 +673,34 @@ export function SportsScores() {
     }
   }
 
-  // Touch Swipe Handlers for Mobile Swipe Action
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.touches[0].clientX)
-  }
-
+  // Swipe handlers
+  const handleTouchStart = (e: React.TouchEvent) => setTouchStartX(e.touches[0].clientX)
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX === null) return
-    const touchEndX = e.changedTouches[0].clientX
-    const diff = touchStartX - touchEndX
-    // Swipe left (next match)
-    if (diff > 50) {
-      nextMatch()
-    }
-    // Swipe right (prev match)
-    else if (diff < -50) {
-      prevMatch()
-    }
+    const diff = touchStartX - e.changedTouches[0].clientX
+    if (diff > 50) nextMatch()
+    else if (diff < -50) prevMatch()
     setTouchStartX(null)
   }
 
-  // Mouse Drag Swipe Handlers for Desktop Drag Action
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setMouseDownX(e.clientX)
-  }
-
+  const handleMouseDown = (e: React.MouseEvent) => setMouseDownX(e.clientX)
   const handleMouseUp = (e: React.MouseEvent) => {
     if (mouseDownX === null) return
-    const mouseEndX = e.clientX
-    const diff = mouseDownX - mouseEndX
-    // Swipe left (next match)
-    if (diff > 50) {
-      nextMatch()
-    }
-    // Swipe right (prev match)
-    else if (diff < -50) {
-      prevMatch()
-    }
+    const diff = mouseDownX - e.clientX
+    if (diff > 50) nextMatch()
+    else if (diff < -50) prevMatch()
     setMouseDownX(null)
   }
-
-  const handleMouseLeave = () => {
-    setMouseDownX(null)
-  }
+  const handleMouseLeave = () => setMouseDownX(null)
 
   // Render Header Logo Badge
-  const renderLogo = (type: "fifa" | "npfl" | "epl") => {
-    if (type === "fifa") {
+  const renderLogo = (type: "wafcon" | "fifa" | "npfl" | "epl") => {
+    if (type === "wafcon" || type === "fifa") {
       return (
-        <img
-          src="/fifa-2026-logo.png"
-          alt="FIFA World Cup 2026"
-          className="h-11 w-auto object-contain flex-shrink-0 select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]"
-          onError={(e) => {
-            e.currentTarget.style.display = "none"
-          }}
-        />
+        <div className="flex items-center gap-1.5 bg-black/40 px-2 py-0.5 border border-emerald-400/30 rounded-sm">
+          <Trophy className="w-3.5 h-3.5 text-[#e5c158]" />
+          <span className="text-[10px] font-black text-white uppercase tracking-wider">WAFCON</span>
+        </div>
       )
     }
 
@@ -682,7 +736,7 @@ export function SportsScores() {
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">LOADING SCORES...</span>
         </div>
       ) : (
-        /* Main Pitch Card with User's custom background */
+        /* Main Pitch Card */
         <div
           className="relative w-full h-[180px] bg-[#1b802e] bg-cover bg-center shadow-xl overflow-hidden rounded-[20px] border border-white/10 group/card select-none cursor-grab active:cursor-grabbing"
           style={{ backgroundImage: "url('/soccer-pitch-bg.png')" }}
@@ -712,7 +766,7 @@ export function SportsScores() {
                   </div>
                 ) : (
                   <div className="bg-black/35 text-white/90 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-[2px] shadow-sm">
-                    {currentMatch.time || "TBD"}
+                    {currentMatch.time || "FT"}
                   </div>
                 )}
               </div>
@@ -766,12 +820,14 @@ export function SportsScores() {
                   <button
                     onClick={prevMatch}
                     className="p-1 hover:bg-white/10 active:bg-white/20 text-white/90 hover:text-white transition-colors cursor-pointer rounded-full"
+                    title="Previous match"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={nextMatch}
                     className="p-1 hover:bg-white/10 active:bg-white/20 text-white/90 hover:text-white transition-colors cursor-pointer rounded-full"
+                    title="Next match"
                   >
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>

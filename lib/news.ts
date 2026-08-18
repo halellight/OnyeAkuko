@@ -67,19 +67,29 @@ export function detectCategory(title: string, description: string): string {
 }
 
 // 🌍 Region Detection
-export function detectRegion(title: string, description: string): "global" | "africa" | "nigeria" {
+export function detectRegion(title: string, description: string, source?: string): "global" | "africa" | "nigeria" {
     const text = (title + " " + description).toLowerCase()
+    const sourceLower = (source || "").toLowerCase()
     
+    // Nigerian news publishers automatically map to nigeria region
+    const nigerianSources = [
+        "punch", "vanguard", "daily post", "information nigeria", "techcabal", 
+        "premium times", "the cable", "the nation", "daily trust", "thisday", "news agency of nigeria"
+    ]
+    if (nigerianSources.some(s => sourceLower.includes(s))) {
+        return "nigeria"
+    }
+
     const nigeriaKeywords = [
         "nigeria", "nigerian", "lagos", "abuja", "kano", "port harcourt", "tinubu", "naira", "fg", 
         "inec", "dangote", "wike", "fubara", "sanwo-olu", "nollywood", "afrobeats", "super eagles", 
-        "efcc", "ndlea", "cbn", "nnpc", "asuu", "nlc", "tuc", "kaduna", "enugu", "ibadan", "benin", 
-        "calabar", "jos", "maiduguri", "anambra", "rivers state", "oyo", "kwara"
+        "super falcons", "falcons", "efcc", "ndlea", "cbn", "nnpc", "asuu", "nlc", "tuc", "kaduna", 
+        "enugu", "ibadan", "benin", "calabar", "jos", "maiduguri", "anambra", "rivers state", "oyo", "kwara"
     ]
     
     const africaKeywords = [
         "africa", "african", "kenya", "ghana", "south africa", "uganda", "rwanda", "ethiopia", "egypt", 
-        "morocco", "senegal", "tunisia", "algeria", "cameroon", "ecowas", "african union", "au"
+        "morocco", "senegal", "tunisia", "algeria", "cameroon", "ecowas", "african union", "au", "wafcon", "caf"
     ]
 
     const containsNigeria = nigeriaKeywords.some(keyword => text.includes(keyword))
@@ -187,7 +197,7 @@ export async function scrapeAndUpsertNews(): Promise<void> {
                 source: s.source,
                 category: detectCategory(title, description),
                 sentiment: detectSentiment(title, description),
-                region: detectRegion(title, description),
+                region: detectRegion(title, description, s.source),
                 date: s.date || new Date().toISOString(),
                 image_url: s.imageUrl || "/Group728.png",
                 link: s.link || "#",
@@ -355,7 +365,7 @@ export async function getNews(options: NewsOptions = {}) {
                 source: source,
                 category: detectCategory(mappedTitle, mappedDesc),
                 sentiment: detectSentiment(mappedTitle, mappedDesc),
-                region: article.region || detectRegion(mappedTitle, mappedDesc),
+                region: article.region || detectRegion(mappedTitle, mappedDesc, source),
                 date: article.published_at || article.date || new Date().toISOString(),
                 imageUrl: article.image || article.imageUrl || "/Group728.png",
                 link: article.url || article.link || "#",
@@ -418,9 +428,13 @@ export async function getNews(options: NewsOptions = {}) {
 
     // Filtering by Metadata if requested
     let filtered = stories
-    if (region !== "all") filtered = filtered.filter(a => a.region === region)
+    if (category === "nigeria") {
+        filtered = filtered.filter(a => a.region === "nigeria" || a.category === "nigeria")
+    } else {
+        if (region !== "all") filtered = filtered.filter(a => a.region === region)
+        if (category !== "all") filtered = filtered.filter(a => a.category === category)
+    }
     if (sentiment !== "all") filtered = filtered.filter(a => a.sentiment === sentiment)
-    if (category !== "all") filtered = filtered.filter(a => a.category === category)
 
     // Time Filtering
     const now = new Date()

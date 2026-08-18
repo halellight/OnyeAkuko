@@ -193,7 +193,7 @@ export async function scrapeNigerianNews(): Promise<ScrapedArticle[]> {
             const article = $(element)
             
             // Refined resilient title finder
-            let titleEl = article.find(source.selectors.title).first()
+            let titleEl: any = article.find(source.selectors.title).first()
             if (titleEl.length === 0 && (source.selectors.title === "a" || source.selectors.title.includes("a"))) {
               if (article.is("a")) titleEl = article
               else if (article.is("h2") || article.is("h3")) titleEl = article.find("a").first()

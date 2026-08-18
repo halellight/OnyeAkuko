@@ -1,28 +1,41 @@
 "use client"
 
 import type React from "react"
+import { Search, X } from "lucide-react"
 
-import { useState } from "react"
+interface SearchInputProps {
+  value?: string
+  onChange?: (value: string) => void
+  placeholder?: string
+  className?: string
+}
 
-export function SearchInput() {
-  const [searchTerm, setSearchTerm] = useState("")
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: Implement search functionality
-    console.log("Search for:", searchTerm)
-  }
-
+export function SearchInput({
+  value = "",
+  onChange = () => {},
+  placeholder = "Search articles, topics, sources...",
+  className = ""
+}: SearchInputProps) {
   return (
-    <form onSubmit={handleSearch} className="relative">
-      <span className="absolute left-3 top-2.5 text-muted-foreground">🔍</span>
+    <div className={`relative flex items-center w-full ${className}`}>
+      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
       <input
         type="text"
-        placeholder="Search articles..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full pl-10 pr-10 py-2 text-sm rounded-full border border-border bg-background/80 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#e59c6a] transition-all"
       />
-    </form>
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+          title="Clear search"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
   )
 }
