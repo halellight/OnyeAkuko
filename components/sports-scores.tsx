@@ -698,8 +698,8 @@ export function SportsScores() {
       return (
         <img
           src="/wafcon-logo.png"
-          alt="CAF Women's Africa Cup of Nations Morocco 26"
-          className="h-9 sm:h-10 w-auto max-w-[160px] object-contain flex-shrink-0 select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] rounded-sm"
+          alt="CAF Women's Africa Cup of Nations"
+          className="h-7 sm:h-8 w-auto max-w-[125px] sm:max-w-[145px] object-contain flex-shrink-0 select-none rounded-[3px] shadow-sm"
           onError={(e) => {
             e.currentTarget.style.display = "none"
           }}
@@ -750,25 +750,25 @@ export function SportsScores() {
           onMouseLeave={handleMouseLeave}
         >
           {/* Content Overlay */}
-          <div className="absolute inset-0 p-5 flex flex-col justify-between z-10 bg-black/10">
+          <div className="absolute inset-0 p-4 sm:p-5 flex flex-col justify-between z-10 bg-black/10">
             {/* Header Row */}
-            <div className="flex items-start justify-between w-full">
-              <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
                 {renderLogo(currentMatch.logoType)}
-                <span className="text-[11px] font-black text-white/80 tracking-wider uppercase mt-1 drop-shadow-sm">
+                <span className="text-[10px] sm:text-[11px] font-black text-white/90 tracking-wider uppercase drop-shadow-sm">
                   {currentMatch.stage}
                 </span>
               </div>
 
               {/* Time / Live State Badge */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {currentMatch.status === "LIVE" ? (
                   <div className="flex items-center gap-1.5 bg-red-600/90 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 animate-pulse rounded-[2px] shadow-sm">
                     <span className="w-1.5 h-1.5 bg-white rounded-full inline-block animate-ping" />
                     <span>LIVE {currentMatch.time}</span>
                   </div>
                 ) : (
-                  <div className="bg-black/35 text-white/90 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-[2px] shadow-sm">
+                  <div className="bg-black/40 text-white/90 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-[3px] shadow-sm border border-white/10">
                     {currentMatch.time || "FT"}
                   </div>
                 )}

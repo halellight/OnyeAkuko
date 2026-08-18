@@ -43,7 +43,7 @@ export default function ContactPage() {
 
         {/* Center Contact Card */}
         <div className="border border-border bg-card p-6 sm:p-10 flex flex-col gap-8">
-          
+
           <div className="flex flex-col gap-3 border-b border-border/60 pb-6">
             <h2 className="text-xs font-black uppercase tracking-widest text-[#e59c6a]">
               Founder & Publisher
@@ -58,14 +58,14 @@ export default function ContactPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Email Contact */}
-            <a 
+            <a
               href="mailto:praiseibec@gmail.com"
               className="group border border-border hover:border-[#e59c6a]/40 bg-muted/15 hover:bg-[#e59c6a]/5 p-5 transition-all duration-300 flex items-start gap-4"
             >
               <Mail className="h-6 w-6 text-[#e59c6a] flex-shrink-0 mt-0.5" />
               <div>
                 <h3 className="text-xs font-black uppercase tracking-widest text-foreground group-hover:text-[#e59c6a] transition-colors">
-                  Direct Email
+                  Email
                 </h3>
                 <p className="text-sm font-serif text-muted-foreground mt-1 group-hover:text-foreground transition-colors break-all">
                   praiseibec@gmail.com
@@ -74,7 +74,7 @@ export default function ContactPage() {
             </a>
 
             {/* Wiki Link */}
-            <a 
+            <a
               href="https://praiseibe.com/wiki"
               target="_blank"
               rel="noopener noreferrer"
@@ -94,7 +94,7 @@ export default function ContactPage() {
 
           <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-muted-foreground pt-4 border-t border-border/60">
             <MapPin className="h-4 w-4 text-[#e59c6a]" />
-            <span>Lagos, Nigeria — Operational Hub</span>
+            <span>Abuja, Nigeria</span>
           </div>
 
         </div>

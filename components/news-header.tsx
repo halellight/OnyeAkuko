@@ -120,7 +120,7 @@ export function NewsHeader({
                   value={searchQuery}
                   onFocus={() => setIsSearchOpen(true)}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-12 py-1.5 sm:py-2 text-xs rounded-full bg-muted/20 hover:bg-muted/30 focus:bg-background border border-border/40 focus:border-[#e59c6a] text-foreground placeholder:text-muted-foreground focus:outline-none transition-all"
+                  className="w-full pl-8 pr-12 py-1.5 sm:py-2 text-base sm:text-xs rounded-full bg-muted/20 hover:bg-muted/30 focus:bg-background border border-border/40 focus:border-[#e59c6a] text-foreground placeholder:text-muted-foreground focus:outline-none transition-all"
                 />
                 <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
                   {searchQuery ? (

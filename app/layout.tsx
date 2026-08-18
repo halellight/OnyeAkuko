@@ -1,5 +1,4 @@
-import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Merriweather, Anton } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "sonner"
@@ -7,6 +6,12 @@ import "./globals.css"
 import { NewsletterModal } from "@/components/newsletter-modal"
 import { SettingsPanel } from "@/components/settings-panel"
 import { ThemeProvider } from "@/components/theme-provider"
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+}
 
 const merriweather = Merriweather({
   weight: ["300", "400", "700", "900"],
