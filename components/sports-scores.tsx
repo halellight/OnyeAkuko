@@ -73,11 +73,40 @@ export function SportsScores() {
               <rect x="2" width="1" height="2" fill="#008751" />
             </svg>
           )
+        case "cameroon":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="1" height="2" fill="#007A5E" />
+              <rect x="1" width="1" height="2" fill="#CE1126" />
+              <rect x="2" width="1" height="2" fill="#FCD116" />
+              <polygon points="1.5,0.85 1.54,0.96 1.65,0.96 1.56,1.03 1.59,1.14 1.5,1.07 1.41,1.14 1.44,1.03 1.35,0.96 1.46,0.96" fill="#FCD116" />
+            </svg>
+          )
+        case "malawi":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="3" height="0.67" fill="#000000" />
+              <rect y="0.67" width="3" height="0.67" fill="#CE1126" />
+              <rect y="1.34" width="3" height="0.66" fill="#339E35" />
+              <path d="M 1.15 0.67 A 0.35 0.35 0 0 1 1.85 0.67 Z" fill="#CE1126" />
+              <circle cx="1.5" cy="0.67" r="0.18" fill="#CE1126" stroke="#000000" strokeWidth="0.02" />
+            </svg>
+          )
         case "morocco":
           return (
             <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
               <rect width="3" height="2" fill="#C1272D" />
               <polygon points="1.5,0.7 1.62,1.05 1.95,1.05 1.68,1.25 1.78,1.6 1.5,1.4 1.22,1.6 1.32,1.25 1.05,1.05 1.38,1.05" fill="none" stroke="#006233" strokeWidth="0.08" />
+            </svg>
+          )
+        case "algeria":
+          return (
+            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
+              <rect width="1.5" height="2" fill="#006233" />
+              <rect x="1.5" width="1.5" height="2" fill="#FFFFFF" />
+              <circle cx="1.5" cy="1" r="0.4" fill="#D21034" />
+              <circle cx="1.6" cy="1" r="0.32" fill="#FFFFFF" />
+              <polygon points="1.65,0.9 1.67,0.97 1.75,0.97 1.69,1.02 1.71,1.1 1.65,1.05 1.59,1.1 1.61,1.02 1.55,0.97 1.63,0.97" fill="#D21034" />
             </svg>
           )
         case "south africa":
@@ -91,53 +120,23 @@ export function SportsScores() {
               <path d="M0,0.6 L1,1 L3,1 L3,1.4 L1,1.4 L0,1.8 Z" fill="#007749" />
             </svg>
           )
-        case "zambia":
+        case "ghana":
           return (
             <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
-              <rect width="3" height="2" fill="#198A00" />
-              <rect x="2.0" y="1" width="0.33" height="1" fill="#DE2010" />
-              <rect x="2.33" y="1" width="0.33" height="1" fill="#000000" />
-              <rect x="2.66" y="1" width="0.34" height="1" fill="#EF7D00" />
-              <circle cx="2.5" cy="0.5" r="0.25" fill="#EF7D00" />
+              <rect width="3" height="0.67" fill="#CF0921" />
+              <rect y="0.67" width="3" height="0.67" fill="#FCD20F" />
+              <rect y="1.34" width="3" height="0.66" fill="#006B3F" />
+              <polygon points="1.5,0.8 1.55,0.95 1.7,0.95 1.58,1.05 1.62,1.2 1.5,1.1 1.38,1.2 1.42,1.05 1.3,0.95 1.45,0.95" fill="#000000" />
             </svg>
           )
-        case "cameroon":
+        case "ivory coast":
+        case "cotedivoire":
+        case "cote d'ivoire":
           return (
             <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
-              <rect width="1" height="2" fill="#007A5E" />
-              <rect x="1" width="1" height="2" fill="#CE1126" />
-              <rect x="2" width="1" height="2" fill="#FCD116" />
-              <polygon points="1.5,0.85 1.54,0.96 1.65,0.96 1.56,1.03 1.59,1.14 1.5,1.07 1.41,1.14 1.44,1.03 1.35,0.96 1.46,0.96" fill="#FCD116" />
-            </svg>
-          )
-        case "botswana":
-          return (
-            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
-              <rect width="3" height="2" fill="#75AADB" />
-              <rect y="0.8" width="3" height="0.4" fill="#FFFFFF" />
-              <rect y="0.88" width="3" height="0.24" fill="#000000" />
-            </svg>
-          )
-        case "burundi":
-          return (
-            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
-              <rect width="3" height="2" fill="#1EB53A" />
-              <polygon points="0,0 3,2 0,2 3,0" fill="#CE1126" />
-              <line x1="0" y1="0" x2="3" y2="2" stroke="#FFFFFF" strokeWidth="0.3" />
-              <line x1="0" y1="2" x2="3" y2="0" stroke="#FFFFFF" strokeWidth="0.3" />
-              <circle cx="1.5" cy="1" r="0.45" fill="#FFFFFF" />
-            </svg>
-          )
-        case "togo":
-          return (
-            <svg viewBox="0 0 3 2" className="w-7 h-4.5 shadow-sm border border-white/20 rounded-sm flex-shrink-0">
-              <rect width="3" height="0.4" fill="#006A4E" />
-              <rect y="0.4" width="3" height="0.4" fill="#FFCE00" />
-              <rect y="0.8" width="3" height="0.4" fill="#006A4E" />
-              <rect y="1.2" width="3" height="0.4" fill="#FFCE00" />
-              <rect y="1.6" width="3" height="0.4" fill="#006A4E" />
-              <rect width="1.2" height="1.2" fill="#D21034" />
-              <polygon points="0.6,0.4 0.65,0.55 0.8,0.55 0.68,0.65 0.72,0.8 0.6,0.7 0.48,0.8 0.52,0.65 0.4,0.55 0.55,0.55" fill="#FFFFFF" />
+              <rect width="1" height="2" fill="#FF8200" />
+              <rect x="1" width="1" height="2" fill="#FFFFFF" />
+              <rect x="2" width="1" height="2" fill="#009A44" />
             </svg>
           )
         case "france":
@@ -697,10 +696,14 @@ export function SportsScores() {
   const renderLogo = (type: "wafcon" | "fifa" | "npfl" | "epl") => {
     if (type === "wafcon" || type === "fifa") {
       return (
-        <div className="flex items-center gap-1.5 bg-black/40 px-2 py-0.5 border border-emerald-400/30 rounded-sm">
-          <Trophy className="w-3.5 h-3.5 text-[#e5c158]" />
-          <span className="text-[10px] font-black text-white uppercase tracking-wider">WAFCON</span>
-        </div>
+        <img
+          src="/wafcon-logo.png"
+          alt="CAF Women's Africa Cup of Nations Morocco 26"
+          className="h-9 sm:h-10 w-auto max-w-[160px] object-contain flex-shrink-0 select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] rounded-sm"
+          onError={(e) => {
+            e.currentTarget.style.display = "none"
+          }}
+        />
       )
     }
 
