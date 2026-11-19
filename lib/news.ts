@@ -9,6 +9,16 @@ export interface NewsOptions {
     region?: string
     sentiment?: string
     timeRange?: string
+    search?: string
+    topic?: string
+    limit?: number
+}
+
+// 🗳️ Election Detection helper
+export function isElectionArticle(title: string = "", description: string = ""): boolean {
+    const text = (title + " " + description).toLowerCase()
+    const electionRegex = /\b(election|elections|electoral|inec|voter|voters|voting|ballot|ballots|presidency|presidential|gubernatorial|governorship|candidate|candidates|aspirant|aspirants|campaign|campaigns|primaries|primary|polling|poll|polls|tribunal|bvms|bvas|irev|electorate|2027|cvr|off-cycle|inec chairman)\b/
+    return electionRegex.test(text)
 }
 
 // 🧠 Sentiment Detection
@@ -44,7 +54,7 @@ export function detectCategory(title: string, description: string): string {
     const techRegex = /\b(tech|technology|software|ai|artificial intelligence|startup|startups|digital|app|apps|crypto|cryptocurrency|bitcoin|fintech|telecom|telecomm|broadband|internet|cyber|hacking|developer|chips|silicon|computing|science|research|scientific|robotics|energy|vaccine|health|medical|disease|space|nasa|galaxy|clinical|dna|biology|physics)\b/
     
     // 2. POLITICS (Aligned with Government, INEC, Elections, Judicial, Military, Policy, Laws)
-    const politicsRegex = /\b(politics|political|government|fg|federal government|inec|election|elections|tinubu|presidency|president|governor|governors|senate|senator|senators|minister|ministry|parliament|legislative|bill|law|laws|court|judge|judicial|verdict|supreme court|pdp|apc|lp|party|tribunal|policy|taxation|security|military|police|army|troops|boko haram|ndlea|efcc|corruption|protest|strike|nwc|apc|pdp|buhari|sanwo-olu|wike|fubara)\b/
+    const politicsRegex = /\b(politics|political|government|fg|federal government|inec|election|elections|electoral|voter|voters|voting|ballot|ballots|candidate|candidates|aspirant|aspirants|campaign|campaigns|primaries|primary|polling|bvas|irev|cvr|2027|tinubu|presidency|president|governor|governors|senate|senator|senators|minister|ministry|parliament|legislative|bill|law|laws|court|judge|judicial|verdict|supreme court|pdp|apc|lp|party|tribunal|policy|taxation|security|military|police|army|troops|boko haram|ndlea|efcc|corruption|protest|strike|nwc|apc|pdp|buhari|sanwo-olu|wike|fubara)\b/
     
     // 3. CULTURE (Entertainment, Music, Film, Movies, Arts, Nollywood, Sports, Lifestyle)
     const cultureRegex = /\b(culture|cultural|film|films|movie|movies|cinema|music|musical|song|album|afrobeats|nollywood|hollywood|grammy|wizkid|davido|burna|burnaboy|fashion|designer|fashionista|lifestyle|entertainment|arts|artist|museum|heritage|theater|celebrity|celebrities|sports|football|soccer|super eagles|olympics|stadium|champions league|premier league|chelsea|arsenal|manchester|afcon|trophy|festival|dance|cuisine|tourism|chef|guinness record)\b/
@@ -173,6 +183,86 @@ export const fallbackArticles = [
     }
 ]
 
+export const fallbackElectionArticles = [
+    {
+        id: "fallback-election-1",
+        title: "INEC Readies 2027 General Elections Roadmap and Continuous Voter Registration Expansion",
+        description: "The Independent National Electoral Commission (INEC) announces preparations, Continuous Voter Registration (CVR) rollouts, and technological upgrades ahead of the 2027 general elections.",
+        source: "Premium Times",
+        category: "politics",
+        sentiment: "neutral",
+        region: "nigeria",
+        date: new Date().toISOString(),
+        imageUrl: "/Group728.png",
+        link: "https://premiumtimesng.com",
+        credibility: 0.92,
+        articles: [
+            {
+                id: "sub-election-1",
+                title: "INEC Readies BVAS and IReV Upgrades Ahead of 2027 Polls",
+                description: "Electoral authorities reaffirm commitment to transparent electronic result transmission and logistics overhauls.",
+                source: "The Cable",
+                category: "politics",
+                sentiment: "neutral",
+                region: "nigeria",
+                date: new Date().toISOString(),
+                imageUrl: "/Group728.png",
+                link: "https://thecable.ng",
+                credibility: 0.9,
+                bias: "independent"
+            },
+            {
+                id: "sub-election-2",
+                title: "Parties Strategize as Electoral Commission Sets Guidelines for 2027 Voter Registration",
+                description: "Political stakeholders urge youths and prospective voters across Nigeria to participate actively in voter card registration.",
+                source: "Daily Trust",
+                category: "politics",
+                sentiment: "positive",
+                region: "nigeria",
+                date: new Date().toISOString(),
+                imageUrl: "/Group728.png",
+                link: "https://dailytrust.com",
+                credibility: 0.88,
+                bias: "opposition-leaning"
+            }
+        ],
+        coverageCount: 3,
+        biasDistribution: { government: 1, opposition: 1, independent: 1, neutral: 0 }
+    },
+    {
+        id: "fallback-election-2",
+        title: "Civil Society and Voter Advocacy Groups Push for Electoral Act Amendments",
+        description: "Pro-democracy coalitions and civic groups submit legislative proposals to strengthen ballot integrity, Diaspora voting, and voter education ahead of 2027.",
+        source: "Punch Nigeria",
+        category: "politics",
+        sentiment: "neutral",
+        region: "nigeria",
+        date: new Date(Date.now() - 3600000 * 6).toISOString(),
+        imageUrl: "/Group728.png",
+        link: "https://punchng.com",
+        credibility: 0.88,
+        articles: [],
+        coverageCount: 1,
+        biasDistribution: { government: 0, opposition: 0, independent: 0, neutral: 1 }
+    },
+    {
+        id: "fallback-election-3",
+        title: "Youth Coalition Mobilizes Voter Education Across 36 States for 2027 Elections",
+        description: "Civic organizations and youth leaders launch nationwide awareness campaigns urging first-time voters and citizens to collect their PVCs.",
+        source: "The Nation",
+        category: "politics",
+        sentiment: "positive",
+        region: "nigeria",
+        date: new Date(Date.now() - 3600000 * 14).toISOString(),
+        imageUrl: "/Group728.png",
+        link: "https://thenationonlineng.net",
+        credibility: 0.85,
+        articles: [],
+        coverageCount: 1,
+        biasDistribution: { government: 1, opposition: 0, independent: 0, neutral: 0 }
+    }
+]
+
 let isScrapingInProgress = false
 
 export async function scrapeAndUpsertNews(): Promise<void> {
@@ -226,10 +316,10 @@ export async function scrapeAndUpsertNews(): Promise<void> {
 }
 
 export async function getNews(options: NewsOptions = {}) {
-    const { category = "all", region = "all", sentiment = "all", timeRange = "today" } = options
+    const { category = "all", region = "all", sentiment = "all", timeRange = "today", search, topic, limit } = options
 
     const allArticles: any[] = []
-    console.log(`[news-service] Fetching news: Category=${category}, Region=${region}, TimeRange=${timeRange}`)
+    console.log(`[news-service] Fetching news: Category=${category}, Region=${region}, TimeRange=${timeRange}, Topic=${topic || "none"}, Search=${search || "none"}`)
 
     // 🗄️ Database-First Fetching from Supabase
     let dbArticles: any[] = []
@@ -432,9 +522,58 @@ export async function getNews(options: NewsOptions = {}) {
         filtered = filtered.filter(a => a.region === "nigeria" || a.category === "nigeria")
     } else {
         if (region !== "all") filtered = filtered.filter(a => a.region === region)
-        if (category !== "all") filtered = filtered.filter(a => a.category === category)
+        if (category !== "all" && category !== "election") filtered = filtered.filter(a => a.category === category)
     }
     if (sentiment !== "all") filtered = filtered.filter(a => a.sentiment === sentiment)
+
+    // Topic filtering (Election)
+    const isElectionTopic = topic === "election" || category === "election"
+    if (isElectionTopic) {
+        filtered = filtered.filter(story => {
+            const matchStory = isElectionArticle(story.title, story.description)
+            const matchNested = story.articles?.some((a: any) => isElectionArticle(a.title, a.description))
+            return matchStory || matchNested
+        })
+
+        // If filtering by category/sentiment resulted in 0, retry matching across all raw stories
+        if (filtered.length === 0 && stories.length > 0) {
+            filtered = stories.filter(story => {
+                const matchStory = isElectionArticle(story.title, story.description)
+                const matchNested = story.articles?.some((a: any) => isElectionArticle(a.title, a.description))
+                return matchStory || matchNested
+            })
+        }
+    }
+
+    // Keyword Search filter
+    if (search && search.trim()) {
+        const q = search.toLowerCase().trim()
+        filtered = filtered.filter(story => {
+            const matchStory = (story.title || "").toLowerCase().includes(q) ||
+                (story.description || "").toLowerCase().includes(q) ||
+                (story.source || "").toLowerCase().includes(q)
+            const matchNested = story.articles?.some((a: any) =>
+                (a.title || "").toLowerCase().includes(q) ||
+                (a.description || "").toLowerCase().includes(q) ||
+                (a.source || "").toLowerCase().includes(q)
+            )
+            return matchStory || matchNested
+        })
+
+        if (filtered.length === 0 && stories.length > 0) {
+            filtered = stories.filter(story => {
+                const matchStory = (story.title || "").toLowerCase().includes(q) ||
+                    (story.description || "").toLowerCase().includes(q) ||
+                    (story.source || "").toLowerCase().includes(q)
+                const matchNested = story.articles?.some((a: any) =>
+                    (a.title || "").toLowerCase().includes(q) ||
+                    (a.description || "").toLowerCase().includes(q) ||
+                    (a.source || "").toLowerCase().includes(q)
+                )
+                return matchStory || matchNested
+            })
+        }
+    }
 
     // Time Filtering
     const now = new Date()
@@ -461,15 +600,22 @@ export async function getNews(options: NewsOptions = {}) {
             timeFiltered = filtered.filter(a => new Date(a.date).getTime() >= fortyEightHoursAgo)
         }
 
-        if (timeFiltered.length === 0) {
-            console.log("[news-service] No stories found after time filter, using fallback.")
-            return fallbackArticles
+        // If topic or search was specified, do not let strict today cut-off wipe out matching items
+        if (timeFiltered.length === 0 && (isElectionTopic || search)) {
+            console.log(`[news-service] Relaxing strict time cutoff for topic/search query (${filtered.length} stories available)`)
+        } else {
+            filtered = timeFiltered
         }
-
-        filtered = timeFiltered
     }
 
-    if (filtered.length === 0) return fallbackArticles
+    if (filtered.length === 0) {
+        if (isElectionTopic || (search && /\b(election|voter|ballot|inec|2027)\b/i.test(search))) {
+            console.log("[news-service] No election stories found after filter, using fallback election articles.")
+            return fallbackElectionArticles
+        }
+        return fallbackArticles
+    }
 
-    return filtered.slice(0, 50)
+    const maxItems = limit && limit > 0 ? Math.min(limit, 100) : 50
+    return filtered.slice(0, maxItems)
 }

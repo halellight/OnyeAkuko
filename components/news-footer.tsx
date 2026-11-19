@@ -39,6 +39,9 @@ export function NewsFooter() {
             <Link href="/about" className="hover:text-[#e59c6a] transition-colors">
               About Us
             </Link>
+            <Link href="/developers" className="hover:text-[#e59c6a] transition-colors">
+              API & Developers
+            </Link>
             <Link href="/terms" className="hover:text-[#e59c6a] transition-colors">
               Terms of Service
             </Link>

@@ -1,0 +1,47 @@
+version: 1
+prune: true
+monitors:
+  - key: api-health
+    name: OnyeAkuko Production Health
+    type: http
+    environment: production
+    severity: high
+    owned_service: true
+    failure_threshold: 2
+    recovery_threshold: 1
+    http:
+      method: GET
+      url: "${PUBLIC_BASE_URL}/api/health"
+      interval_seconds: 60
+      timeout_seconds: 10
+      regions: [lon1]
+      region_quorum: 1
+      assertions:
+        - type: status_code
+          operator: equals
+          target: 200
+
+  - key: news-scraper-cron
+    name: News Scraper Pipeline
+    type: heartbeat
+    output_env: OLUSO_SCRAPER_HEARTBEAT_URL
+    environment: production
+    severity: high
+    owned_service: true
+    heartbeat:
+      schedule_mode: interval
+      expected_every_seconds: 3600
+      grace_seconds: 600
+
+  - key: send-digests-cron
+    name: Newsletter Digest Delivery
+    type: heartbeat
+    output_env: OLUSO_DIGEST_HEARTBEAT_URL
+    environment: production
+    severity: high
+    owned_service: true
+    heartbeat:
+      schedule_mode: cron
+      cron_expression: "0 8,16 * * *"
+      timezone: "UTC"
+      grace_seconds: 1800

@@ -1,8 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getNews, scrapeAndUpsertNews } from "@/lib/news"
 import { processDigestSending } from "@/lib/notifications"
+import { withOluso } from "@oluso/nextjs"
+import { oluso } from "@/instrumentation"
 
-export async function GET(request: NextRequest) {
+export const GET = withOluso(oluso, async (request: Request) => {
+  let digestTime: "Morning" | "Evening" | null = null
   try {
     // ... verification logic ...
     // (keep current verification)
@@ -18,7 +21,6 @@ export async function GET(request: NextRequest) {
     const forceTime = searchParams.get("force")
 
     const currentHour = new Date().getUTCHours()
-    let digestTime: "Morning" | "Evening" | null = null
 
     if (forceTime === "Morning" || forceTime === "Evening") {
       digestTime = forceTime
@@ -33,6 +35,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "Not a scheduled digest time", hour: currentHour }, { status: 200 })
     }
 
+    oluso.addBreadcrumb({
+      message: `Triggering ${digestTime} digest`,
+      category: "cron",
+      level: "info",
+      data: { digestTime, currentHour }
+    })
     console.log(`[Cron] Triggering ${digestTime} digest...`)
 
     console.log("[Cron] Running synchronous scraping check...")
@@ -40,6 +48,11 @@ export async function GET(request: NextRequest) {
       await scrapeAndUpsertNews()
     } catch (err) {
       console.error("[Cron] Synchronous scraping failed, continuing to compile digest with existing database cache:", err)
+      oluso.addBreadcrumb({
+        message: "Synchronous scraping before digest compilation encountered an error",
+        category: "scraper",
+        level: "warning"
+      })
     }
 
     const timeRange = digestTime === "Morning" ? "morning" : "evening"
@@ -51,12 +64,34 @@ export async function GET(request: NextRequest) {
 
     console.log(`[Cron] ${digestTime} digest completed:`, sendResult)
 
+    // Signal heartbeat on successful run
+    const heartbeatUrl = process.env.OLUSO_DIGEST_HEARTBEAT_URL || process.env.OLUSO_HEARTBEAT_URL
+    if (heartbeatUrl) {
+      await oluso.heartbeat(heartbeatUrl, {
+        context: { digestTime, sendResult }
+      }).catch(e => console.warn("[Cron] Oluso heartbeat ping failed:", e))
+    }
+
     return NextResponse.json({
       message: `${digestTime} digest process completed`,
       ...sendResult,
     })
   } catch (error) {
     console.error("[Cron] Critical error:", error)
+    await oluso.captureException(error instanceof Error ? error : new Error(String(error)), {
+      job: "send-digests",
+      digestTime: digestTime || "unknown"
+    })
+
+    const heartbeatUrl = process.env.OLUSO_DIGEST_HEARTBEAT_URL || process.env.OLUSO_HEARTBEAT_URL
+    if (heartbeatUrl) {
+      await oluso.heartbeat(heartbeatUrl, {
+        status: "failed",
+        message: error instanceof Error ? error.message : String(error),
+        evidence: { error: String(error) }
+      }).catch(() => {})
+    }
+
     return NextResponse.json({ error: "Failed to process cron job", details: error instanceof Error ? error.message : String(error) }, { status: 500 })
   }
-}
+})

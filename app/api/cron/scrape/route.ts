@@ -2,10 +2,12 @@ import { type NextRequest, NextResponse } from "next/server"
 import { scrapeNigerianNews } from "@/lib/news-scraper"
 import { supabaseAdmin } from "@/lib/supabase"
 import { detectCategory, detectSentiment, detectRegion } from "@/lib/news"
+import { withOluso } from "@oluso/nextjs"
+import { oluso } from "@/instrumentation"
 
 export const maxDuration = 60 // Allow Vercel up to 60 seconds execution time for scraping
 
-export async function GET(request: NextRequest) {
+export const GET = withOluso(oluso, async (request: Request) => {
   try {
     const authHeader = request.headers.get("Authorization")
     const { searchParams } = new URL(request.url)
@@ -21,9 +23,16 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    oluso.addBreadcrumb({ message: "Starting background scraping job", category: "cron", level: "info" })
     console.log("[cron-scraper] Starting background scraping job...")
     const scraped = await scrapeNigerianNews()
     console.log(`[cron-scraper] Scraper returned ${scraped.length} articles total.`)
+    oluso.addBreadcrumb({
+      message: `Scraper returned ${scraped.length} articles total`,
+      category: "scraper",
+      level: "info",
+      data: { count: scraped.length }
+    })
 
     if (scraped.length === 0) {
       return NextResponse.json({ success: true, count: 0, message: "Scraper yielded 0 articles. Database unmodified." })
@@ -67,6 +76,14 @@ export async function GET(request: NextRequest) {
       throw error
     }
 
+    // Signal heartbeat on successful run
+    const heartbeatUrl = process.env.OLUSO_SCRAPER_HEARTBEAT_URL || process.env.OLUSO_HEARTBEAT_URL
+    if (heartbeatUrl) {
+      await oluso.heartbeat(heartbeatUrl, {
+        context: { count: uniqueMappedArticles.length }
+      }).catch(e => console.warn("[cron-scraper] Oluso heartbeat ping failed:", e))
+    }
+
     return NextResponse.json({
       success: true,
       count: uniqueMappedArticles.length,
@@ -75,6 +92,19 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error("[cron-scraper] Fatal Scraper Job Error:", error)
+    await oluso.captureException(error instanceof Error ? error : new Error(String(error)), {
+      job: "scrapeNigerianNews"
+    })
+
+    const heartbeatUrl = process.env.OLUSO_SCRAPER_HEARTBEAT_URL || process.env.OLUSO_HEARTBEAT_URL
+    if (heartbeatUrl) {
+      await oluso.heartbeat(heartbeatUrl, {
+        status: "failed",
+        message: error.message || String(error),
+        evidence: { error: String(error) }
+      }).catch(() => {})
+    }
+
     return NextResponse.json({ success: false, error: error.message || String(error) }, { status: 500 })
   }
-}
+})

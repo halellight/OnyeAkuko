@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
+import { withOluso } from "@oluso/nextjs"
+import { oluso } from "@/instrumentation"
 
 interface SourceItem {
   title: string
@@ -24,7 +26,7 @@ interface FactCheckResponse {
   sources: SourceItem[]
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withOluso(oluso, async (request: Request) => {
   try {
     const { headline } = await request.json()
 
@@ -33,6 +35,12 @@ export async function POST(request: NextRequest) {
     }
 
     const query = headline.trim()
+    oluso.addBreadcrumb({
+      message: "Checking headline claim",
+      category: "truth-engine",
+      level: "info",
+      data: { query: query.slice(0, 100) },
+    })
     const queryWords = query.replace(/[^a-z0-9\s]/gi, "").split(/\s+/).filter(w => w.length > 2)
 
     // 1. Search Supabase articles for relevant live news context
@@ -135,9 +143,18 @@ Respond strictly in valid JSON with these exact keys:
           }
         } else {
           console.warn("[check-headline-api] OpenAI API returned non-200:", aiRes.status)
+          oluso.addBreadcrumb({
+            message: `OpenAI API returned non-200: ${aiRes.status}`,
+            category: "ai",
+            level: "warning",
+          })
         }
       } catch (aiError) {
         console.error("[check-headline-api] AI Engine error:", aiError)
+        await oluso.captureException(aiError instanceof Error ? aiError : new Error(String(aiError)), {
+          feature: "ai-fact-check",
+          query: query.slice(0, 100),
+        })
       }
     }
 
@@ -145,9 +162,12 @@ Respond strictly in valid JSON with these exact keys:
     return NextResponse.json(generateFallbackFactCheck(query, matchedArticles))
   } catch (error) {
     console.error("[check-headline-api] General error:", error)
+    await oluso.captureException(error instanceof Error ? error : new Error(String(error)), {
+      endpoint: "app/api/check-headline",
+    })
     return NextResponse.json(generateFallbackFactCheck("general query", []), { status: 500 })
   }
-}
+})
 
 function getDefaultSourcesForQuery(query: string): SourceItem[] {
   const lower = query.toLowerCase()

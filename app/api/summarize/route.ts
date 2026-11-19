@@ -1,9 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { withOluso } from "@oluso/nextjs"
+import { oluso } from "@/instrumentation"
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 
-export async function POST(request: NextRequest) {
+export const POST = withOluso(oluso, async (request: Request) => {
   try {
     const { title, description } = await request.json()
 
@@ -66,6 +68,9 @@ Rules:
     return NextResponse.json({ summary, isAI: true })
   } catch (error) {
     console.error("[summarize] Error:", error)
+    await oluso.captureException(error instanceof Error ? error : new Error(String(error)), {
+      endpoint: "app/api/summarize"
+    })
     return NextResponse.json({ summary: "", isAI: false })
   }
-}
+})

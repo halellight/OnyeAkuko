@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server"
+import { withOluso } from "@oluso/nextjs"
+import { oluso } from "@/instrumentation"
 
 interface Match {
   id: string
@@ -192,7 +194,7 @@ function getDynamicClubMatches(type: "npfl" | "epl"): Match[] {
   return type === "npfl" ? npflMatches : eplMatches
 }
 
-export async function GET() {
+export const GET = withOluso(oluso, async () => {
   try {
     return NextResponse.json({
       wafcon: wafconTournamentMatches,
@@ -202,6 +204,9 @@ export async function GET() {
     })
   } catch (error) {
     console.error("[sports-scores-api] Error returning scores:", error)
+    await oluso.captureException(error instanceof Error ? error : new Error(String(error)), {
+      endpoint: "app/api/sports-scores"
+    })
     return NextResponse.json({
       wafcon: wafconTournamentMatches,
       worldcup: wafconTournamentMatches,
@@ -209,4 +214,4 @@ export async function GET() {
       epl: getDynamicClubMatches("epl")
     })
   }
-}
+})

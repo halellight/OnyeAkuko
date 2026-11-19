@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/supabase"
+import { withOluso } from "@oluso/nextjs"
+import { oluso } from "@/instrumentation"
 
 async function sendWelcomeEmail(to: string) {
   const MAILTRAP_API_KEY = process.env.MAILTRAP_API_KEY
@@ -53,7 +55,7 @@ async function sendWelcomeEmail(to: string) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withOluso(oluso, async (request: Request) => {
   try {
     const { email, digestTimes } = await request.json()
 
@@ -72,6 +74,12 @@ export async function POST(request: NextRequest) {
     }
 
     const emailKey = email.toLowerCase()
+    oluso.addBreadcrumb({
+      message: "Processing newsletter subscription",
+      category: "newsletter",
+      level: "info",
+      data: { digestTimes }
+    })
 
     // Upsert subscription into Supabase
     const { error } = await supabaseAdmin
@@ -87,22 +95,35 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("[Supabase] Subscription error:", error)
+      await oluso.captureException(new Error(`Subscription DB error: ${error.message}`), {
+        emailRedacted: true
+      })
       return NextResponse.json({ error: "Failed to save subscription" }, { status: 500 })
     }
 
     // 📧 Send Welcome Email
-    await sendWelcomeEmail(emailKey).catch(err => console.error("Welcome email error:", err))
+    await sendWelcomeEmail(emailKey).catch(err => {
+      console.error("Welcome email error:", err)
+      oluso.addBreadcrumb({
+        message: "Failed to send welcome email",
+        category: "mailtrap",
+        level: "warning"
+      })
+    })
 
     console.log(`[OnyeAkuko] New/Updated subscription: ${emailKey}`, digestTimes)
 
     return NextResponse.json({ message: "Successfully subscribed", email: emailKey }, { status: 201 })
   } catch (error) {
     console.error("Subscription route error:", error)
+    await oluso.captureException(error instanceof Error ? error : new Error(String(error)), {
+      endpoint: "app/api/notifications/subscribe"
+    })
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
-}
+})
 
-export async function GET() {
+export const GET = withOluso(oluso, async () => {
   try {
     const { data, count, error } = await supabaseAdmin
       .from('subscriptions')
@@ -110,6 +131,7 @@ export async function GET() {
 
     if (error) {
       console.error("[Supabase] Fetch error:", error)
+      await oluso.captureException(new Error(`Fetch subscriptions DB error: ${error.message}`))
       return NextResponse.json({ error: "Failed to fetch subscriptions" }, { status: 500 })
     }
 
@@ -119,6 +141,9 @@ export async function GET() {
     })
   } catch (error) {
     console.error("Subscription GET error:", error)
+    await oluso.captureException(error instanceof Error ? error : new Error(String(error)), {
+      endpoint: "app/api/notifications/subscribe [GET]"
+    })
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
-}
+})
